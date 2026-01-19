@@ -1,0 +1,47 @@
+:root {
+  --bg-color: #ffffff;
+  --text-color: #111111;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.6s ease, color 0.6s ease;
+}
+
+body[data-time="day"] {
+  --bg-color: #cfd8e3;
+  --text-color: #111111;
+}
+
+body[data-time="night"] {
+  --bg-color: #0b0b0f;
+  --text-color: #eeeeee;
+}
+
+.scene {
+  display: none;
+  position: relative;
+  z-index: 1;
+}
+
+.scene.active {
+  display: block;
+}
+
+/* Эффекты */
+
+main {
+  position: relative;
+  z-index: 1;
+}
+
+#particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
