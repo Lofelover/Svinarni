@@ -3,6 +3,12 @@
   --text-color: #111111;
 }
 
+html,
+body {
+  height: 100%;
+  overflow-y: hidden;
+}
+
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
@@ -43,5 +49,46 @@ main {
   z-index: 0;
   opacity: 0;
   transition: opacity 1s ease;
+}
+
+
+/* Финальные титры */
+
+#final {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.credits {
+  position: relative;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.credits-content {
+  text-align: center;
+  font-size: 24px;
+  line-height: 2;
+  animation: credits-roll 40s linear forwards;
+}
+
+.credits-content h2 {
+  margin-bottom: 40px;
+  font-size: 32px;
+}
+
+.credits-content .spacer {
+  height: 80px;
+}
+
+@keyframes credits-roll {
+  from {
+    transform: translateY(120%);
+  }
+  to {
+    transform: translateY(-150%);
+  }
 }
 

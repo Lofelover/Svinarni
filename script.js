@@ -31,9 +31,8 @@ function typeText(container, text, onFinish) {
       clearInterval(interval);
       if (onFinish) onFinish();
     }
-  }, 40);
+  }, 10);
 }
-
 
 startBtn.addEventListener("click", () => {
   startBtn.hidden = true;
@@ -77,14 +76,11 @@ let firstHikeIndex = 0;
 
 const firstContainer = document.querySelector('#first-hike .scene-content');
 const firstNextBtn = document.getElementById('first-next');
-const toEveningBtn = document.getElementById('to-evening');
+const finishFirstHikeBtn = document.getElementById('to-evening');
 
 firstNextBtn.addEventListener('click', () => {
-  if (firstHikeIndex < firstHikeSteps.length) {
-    firstHikeIndex++;
+  if (firstHikeIndex < firstHikeSteps.length+1) {
     playFirstHikeStep();
-  } else {
-    showScene("second-hike");
   }
 });
 
@@ -94,19 +90,124 @@ function playFirstHikeStep() {
   if (firstHikeIndex < firstHikeSteps.length){
     typeText(firstContainer, firstHikeSteps[firstHikeIndex], () => {
     firstNextBtn.hidden = false;
+    firstHikeIndex++;
     });
   } else {
-    toEveningBtn.hidden = false;
-    toEveningBtn.textContent = "Перейти к первому походу"
+    finishFirstHikeBtn.hidden = false;
   }
 }
 
-toEveningBtn.addEventListener('click', () => {
+finishFirstHikeBtn.addEventListener('click', () => {
   showScene('second-hike');
 });
 
+// Вторая ходка
+
+const secondHikeSteps = [
+  "Вечером лес стал совсем другим.",
+  "Снег перестал блестеть, вокруг сгущалась тишина.",
+  "Мы развели костер, и его треск стал единственным звуком.",
+  "Где-то вдали ухала сова, напоминая, что ночь только начинается."
+];
+
+let secondHikeIndex = 0;
+
+const secondContainer = document.querySelector('#second-hike .scene-content');
+const secondNextBtn = document.getElementById('second-next');
+const finishSecondHikeBtn = document.getElementById('finish');
+
+
+secondNextBtn.addEventListener('click', () => {
+  if (secondHikeIndex < secondHikeSteps.length+1) {
+    playSecondHikeStep();
+  }
+});
+
+function playSecondHikeStep() {
+  secondNextBtn.hidden = true;
+
+  if (secondHikeIndex < secondHikeSteps.length) {
+    typeText(secondContainer, secondHikeSteps[secondHikeIndex], () => {
+        secondNextBtn.hidden = false;
+        secondHikeIndex++;
+    });
+  } else {
+    finishSecondHikeBtn.hidden = false;
+  }
+}
+
+// finishSecondHikeBtn.addEventListener('click', () => {
+//   showScene('final');
+// });
+
+finishSecondHikeBtn.addEventListener('click', () => {
+  showScene('final');
+  setTime('night');
+
+  renderCredits();
+  restartCredits();
+  hideCreditsAfterAnimation();
+});
+
+// Финальная сцена
+
+const participants = [
+  "Илья (Марвел)", 
+  "Никита (Чипик)",
+  "Никита (Пого)",
+  "Матвей (Мотор)",
+  "Дима (Курсед)",
+  "Артем"
+];
+
+function renderCredits() {
+  const container = document.getElementById('credits-content');
+  container.innerHTML = "";
+
+  const title = document.createElement('h2')
+  title.textContent = "Вся братва с тринашки молодец. Мы захватили свинарник!";
+  container.appendChild(title)
+
+  participants.forEach( name => {
+    const p = document.createElement('p');
+    p.textContent = name;
+    container.appendChild(p);
+  });
+
+  const spacer = document.createElement('div');
+  spacer.className = 'spacer';
+  container.appendChild(spacer);
+
+  const footer = document.createElement('p');
+  footer.textContent = "Зима • Лес • Свинарник";
+  container.appendChild(footer);
+
+}
+
+function restartCredits() {
+  const credits = document.querySelector('.credits-content');
+  credits.style.display = 'block';
+  credits.style.animation = 'none';
+  credits.offsetHeight;
+  credits.style.animation = '';
+}
+
+function hideCreditsAfterAnimation() {
+  const credits = document.querySelector('.credits-content');
+
+  credits.addEventListener('animationend', () => {
+    credits.style.display = 'none';
+  }, { once: true });
+}
+
 // Установка времени суток
+
+let currentTime = null;
+
 function setTime(time) {
+  if (currentTime === time) return;
+
+  currentTime = time;
   document.body.dataset.time = time;
 
   disableParticles();
@@ -141,7 +242,6 @@ function showScene(id) {
         setTime('night')
     }
 }
-
 
 // Эффект снега
 function enableSnow() {
