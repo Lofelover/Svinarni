@@ -1,7 +1,46 @@
 // Изначальное состояние первой сцены
 let timeOfDay = 'day';
 
+
+// Рендер сцены
+function renderSceneStep(container, step) {
+  container.innerHTML = "";
+
+  const stepEl = document.createElement("div");
+  stepEl.className = "scene-step";
+
+  const mediaCol = document.createElement("div");
+  mediaCol.className = "media-column";
+
+  step.media.forEach(item => {
+    if (item.type === "image") {
+      const img = document.createElement("img");
+      img.src = item.src;
+      mediaCol.appendChild(img);
+    }
+
+    if (item.type === "video") {
+      const video = document.createElement("video");
+      video.src = item.src;
+      video.controls = true;
+      mediaCol.appendChild(video);
+    }
+  });
+
+  const textCol = document.createElement("div");
+  textCol.className = "text-column";
+
+  stepEl.appendChild(mediaCol);
+  stepEl.appendChild(textCol);
+  container.appendChild(stepEl);
+
+  return textCol; // важно: сюда будем печатать текст
+}
+
+
+
 // Вступление
+
 const introSteps = [
   "Свинарник — это не просто пруд.",
   "Когда мы были мелкими, то часто летом приходили сюда купаться. Кто-то с друзьями, кто-то с родителями.",
@@ -57,7 +96,8 @@ function playIntroStep() {
       nextBtn.hidden = false;
     });
   } else {
-    introContainer.innerHTML += "<p>История начинается…</p>";
+    // introContainer.innerHTML += "<p>&nbsp;История начинается…</p>";
+    introContainer.innerHTML += "<p><br><br><br>История начинается…</p>";
     nextBtn.hidden = false;
     nextBtn.textContent = "Перейти к первому походу";
   }
@@ -65,12 +105,47 @@ function playIntroStep() {
 
 // Первая ходка
 
+// const firstHikeSteps = [
+//   "Илья, Никита(Чипик) и Никита(Пого) участвовали в первой ходке на свинарник.",
+//   "Нам предостоял нелегкий маршрут. Целых два дня перед походом шел снег. Тропа не была протопатна. На верхушке снега виднелись только следы от лыж.",
+//   "Первый отдых мы устроили у Глинки - это тоже небольшой пруд, мы часто плавали в нем. Дальше Чипик решил покататься на дереве. Пого и Илью это очень позабавило!",
+//   "А эти кадры были сделаны в непресредственной близости к заветному месту."
+// ];
+
 const firstHikeSteps = [
-  "Илья, Никита(Чипик) и Никита(Пого) участвовали в первой ходке на свинарник.",
-  "Нам предостоял нелегкий маршрут. Целых два дня перед походом шел снег. Тропа не была протопатна. На верхушке снега виднелись только следы от лыж.",
-  "Первый отдых мы устроили у Глинки - это тоже небольшой пруд, мы часто плавали в нем. Дальше Чипик решил покататься на дереве. Пого и Илью это очень позабавило!",
-  "А эти кадры были сделаны в непресредственной близости к заветному месту."
+  {
+    text: "Илья, Никита (Чипик) и Никита (Пого) участвовали в первой ходке.",
+    media: [
+      { type: "image", src: "media/first/chair.jpg" }
+    ]
+  },
+  {
+    text: "Нам предостоял нелегкий маршрут. Целых два дня перед походом шел снег. Тропа не была протопатна. На верхушке снега виднелись только следы от лыж.",
+    media: [
+      { type: "image", src: "media/first/1.jpg" }
+    ]
+  },
+  {
+    text: "Первый отдых мы устроили у Глинки - это тоже небольшой пруд, мы часто плавали в нем. Дальше Чипик решил покататься на дереве. Пого и Илью это очень позабавило!",
+    media: [
+      { type: "video", src: "media/first/1.mp4" }
+    ]
+  },
+  {
+    text: "А эти кадры были сделаны в непресредственной близости к заветному месту.",
+    media: [
+      {type: "image", src: "media/first/2.jpg"}
+    ]
+  },
+  {
+    text: "Наконец-то мы пришли на глинку, только полюбуйтесь этими видами! Далее мы пытались развести костер, но все наши попытки были тщетны",
+    media: [
+      {type: "image", src: "media/first/3.jpg"},
+      {type: "image", src: "media/first/4.jpg"}
+    ]
+  }
 ];
+
 
 let firstHikeIndex = 0;
 
@@ -79,23 +154,81 @@ const firstNextBtn = document.getElementById('first-next');
 const finishFirstHikeBtn = document.getElementById('to-evening');
 
 firstNextBtn.addEventListener('click', () => {
-  if (firstHikeIndex < firstHikeSteps.length+1) {
-    playFirstHikeStep();
-  }
+  firstHikeIndex++;
+  playFirstHikeStep();
 });
+
+// firstNextBtn.addEventListener('click', () => {
+//   if (firstHikeIndex < firstHikeSteps.length+1) {
+//     playFirstHikeStep();
+//   }
+// });
+
+
+// function playFirstHikeStep() {
+//   firstNextBtn.hidden = true;
+
+//   if (firstHikeIndex < firstHikeSteps.length) {
+//     typeText(firstContainer, firstHikeSteps[firstHikeIndex], () => {
+
+//       const mediaColumn = firstContainer.querySelector('.media-column');
+//       if (mediaColumn) {
+//         mediaColumn.classList.add('visible');
+//       }
+
+//       firstNextBtn.hidden = false;
+
+//       firstHikeIndex++;
+//     });
+
+//   } else {
+//     finishFirstHikeBtn.hidden = false;
+//   }
+// }
+
+
 
 function playFirstHikeStep() {
   firstNextBtn.hidden = true;
 
-  if (firstHikeIndex < firstHikeSteps.length){
-    typeText(firstContainer, firstHikeSteps[firstHikeIndex], () => {
-    firstNextBtn.hidden = false;
-    firstHikeIndex++;
+  if (firstHikeIndex < firstHikeSteps.length) {
+    const step = firstHikeSteps[firstHikeIndex];
+
+    const textContainer = renderSceneStep(firstContainer, step);
+
+    const mediaColumn = firstContainer.querySelector('.media-column');
+    if (mediaColumn) {
+      // Небольшая задержка для синхронизации с началом печати текста
+      setTimeout(() => {
+        mediaColumn.classList.add('visible');
+      }, 100);
+    }
+  
+
+    typeText(textContainer, step.text, () => {
+      
+      firstNextBtn.hidden = false;
     });
+
   } else {
     finishFirstHikeBtn.hidden = false;
   }
 }
+
+
+
+// function playFirstHikeStep() {
+//   firstNextBtn.hidden = true;
+
+//   if (firstHikeIndex < firstHikeSteps.length){
+//     typeText(firstContainer, firstHikeSteps[firstHikeIndex], () => {
+//      firstNextBtn.hidden = false;
+//      firstHikeIndex++;
+//     });
+//   } else {
+//     finishFirstHikeBtn.hidden = false;
+//   }
+// }
 
 finishFirstHikeBtn.addEventListener('click', () => {
   showScene('second-hike');
