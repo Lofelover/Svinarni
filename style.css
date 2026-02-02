@@ -62,8 +62,11 @@ body[data-time="night"] {
   justify-content: center;
   align-items: center;
   min-height: 60vh;
-  margin: 20px 0;
+  /* height: 100%; */
+  /* margin: 40px 0; */
+
 }
+
 .scene > button {
   margin: 20px auto; /* Центрируем по горизонтали */
   font-family: 'Inter', sans-serif; /* Новый шрифт */
@@ -73,6 +76,50 @@ body[data-time="night"] {
 .scene.active {
   display: block;
 }
+
+/* Начало */
+
+.intro-logo {
+  display: block;
+  margin: 120px auto 30px auto;
+
+  max-width: 300px;
+  width: 100%;
+  border-radius: 15%;
+  opacity: 0.9;
+
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+
+.intro-logo {
+  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.25));
+}
+
+#intro .scene-content {
+  display: none;
+}
+
+#intro.started .intro-logo {
+  display: none;
+}
+#intro.started .scene-content {
+  display: flex;
+}
+
+#intro {
+  position: relative;
+}
+
+/* Кнопка "Начать рассказ" */
+#intro-start {
+  position: absolute;
+  bottom: 120px; /* ← подбери под себя */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 
 /* Кнопка */
 button {
@@ -99,10 +146,10 @@ button {
 
   cursor: pointer;
   transition:
-    transform 0.5s ease,
-    box-shadow 0.5s ease,
-    background-color 0.6s ease,
-    opacity 0.6s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.3s ease,
+    opacity 0.3s ease;
 }
 
 button:hover {
@@ -152,17 +199,34 @@ main {
   display: grid;
   grid-template-columns: 1fr 1.2fr;
   gap: 40px;
-
-  height: 100%;
   align-items: center;
+  height: 100%;
+  max-height: 70vh;
+  align-items: center;
+  width: 100%;
+  max-width: 1800px;
+  margin-top: 50px;
 }
 
 .media-column {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-end;
   gap: 40px;
   
+}
+
+.scene-step.no-media {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.scene-step.no-media .text-column {
+  max-width: 900px;
+  text-align: center;
+  padding: 0;
+  margin: 90px;
 }
 
 
@@ -187,12 +251,6 @@ main {
 
 
 
-.media-column.visible img,
-.media-column.visible video {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 .text-column {
   font-size: 32px;
   line-height: 1.8;
@@ -202,7 +260,6 @@ main {
   flex-direction: column;
   justify-content: center;
 
-  padding-right: 40px;
   text-align: left;
 }
 
@@ -210,24 +267,10 @@ main {
   animation: textFadeIn 0.6s ease both;
 }
 
-@keyframes textFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-
 .text-column button {
   align-self: flex-start;
   margin-top: 24px;
 }
-
-
 
 /* Финальные титры */
 
