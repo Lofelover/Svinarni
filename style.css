@@ -77,6 +77,58 @@ body[data-time="night"] {
   display: block;
 }
 
+/* Звук */
+
+/* ===== Управление звуком ===== */
+
+.sound-control {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  padding: 10px 14px;
+  border-radius: 999px;
+
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+body[data-time="night"] .sound-control {
+  background: rgba(30, 30, 35, 0.85);
+}
+
+/* Кнопка mute */
+#sound-toggle {
+  width: 36px;
+  height: 36px;
+
+  border-radius: 50%;
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 18px;
+}
+
+/* Ползунок громкости */
+#sound-volume {
+  width: 80px;
+  cursor: pointer;
+}
+
+
+
 /* Начало */
 
 .intro-logo {
@@ -196,9 +248,12 @@ main {
 /* Видео, фото, текст в сцене */
 
 .scene-step {
-  display: grid;
+  /* display: grid; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
   grid-template-columns: 1fr 1.2fr;
-  gap: 40px;
+  gap: 150px;
   align-items: center;
   height: 100%;
   max-height: 70vh;
@@ -208,13 +263,7 @@ main {
   margin-top: 50px;
 }
 
-.media-column {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  gap: 40px;
-  
-}
+
 
 .scene-step.no-media {
   display: flex;
@@ -230,32 +279,127 @@ main {
 }
 
 
-.media-column img,
-.media-column video {
+.media-column img {
   width: 100%;
-  max-width: 350px;
+  max-width: 420px;
 
   max-height: 50vh;
   object-fit: cover;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
   border-radius: 12px;
-  
 }
 
-.media-column img:only-child,
-.media-column video:only-child {
+.media-column video {
+  width: 100%;
+  max-width: 420px;
+  max-height: 50vh;
+  object-fit: cover; /* Возвращаем cover для обычного режима */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  background-color: #000; /* Оставляем черный фон на случай, если видео не заполняет полностью */
+}
+
+.media-column img:only-child {
   max-width: 420px;
   max-height: 55vh;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
 }
 
+.media-column video:only-child {
+  max-width: 420px;
+  max-height: 55vh;
+  object-fit: cover; /* Измените с cover на contain */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+}
+
+.media-column.two-media {
+  width: 650px;              /* ← ВАЖНО */
+  justify-content: center;
+  gap: 32px;
+}
+
+
+.media-column.two-media img {
+  max-width: 400px;          /* ← каждое становится заметно больше */
+  max-height: 50vh;
+}
+
+.media-column.two-media video {
+  max-width: 400px;
+  max-height: 50vh;
+  object-fit: cover; /* Измените с cover на contain */
+}
+
+video:-webkit-full-screen {
+  object-fit: contain !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+  background-color: #000 !important;
+}
+
+
+video:fullscreen {
+  object-fit: contain !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+  background-color: #000 !important;
+}
+
+/* Добавьте стили для предотвращения масштабирования на мобильных устройствах */
+video {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+* Плавный переход для видео */
+.media-column video {
+  transition: all 0.3s ease;
+}
+
+/* Стили для предотвращения масштабирования на мобильных устройствах */
+video {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+
+
+.media-column {
+  width: 420px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 40px;
+  
+}
 
 
 .text-column {
+  /* margin-left: 100px; */
+  flex: 1;
+  max-width: 650px;
+  min-width: 500px;
+
   font-size: 32px;
   line-height: 1.8;
   font-family: 'Inter', sans-serif;
   font-weight: 400;
+
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -291,7 +435,7 @@ main {
   text-align: center;
   font-size: 30px;
   line-height: 2.2;
-  animation: credits-roll 40s linear forwards;
+  animation: credits-roll 60s linear forwards;
   font-family: 'Inter', sans-serif;
 }
 
@@ -304,12 +448,70 @@ main {
   height: 80px;
 }
 
-@keyframes credits-roll {
+/* @keyframes credits-roll {
   from {
     transform: translateY(100%);
   }
   to {
     transform: translateY(-130%);
   }
+} */
+
+@keyframes credits-roll {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(calc(-100% - 100vh)); /* Титры поднимаются на высоту своего контента + высоту экрана */
+  }
 }
 
+/* Финальное фото */
+.final-photo-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.9);
+    opacity: 0;
+    transition: opacity 2s ease-in-out;
+    z-index: 10;
+}
+
+.final-photo-container.show {
+    opacity: 1;
+}
+
+#final-photo {
+    max-width: 80%;
+    max-height: 70%;
+    border-radius: 15px;
+    box-shadow: 0 0 40px rgba(255, 165, 0, 0.5);
+    margin-bottom: 40px;
+    transform: scale(0.95);
+    transition: transform 1s ease;
+}
+
+.final-photo-container.show #final-photo {
+    transform: scale(1);
+}
+
+#restart-button {
+    font-size: 20px;
+    padding: 15px 40px;
+    background: linear-gradient(135deg, #ff6600, #ff3300);
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#restart-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(255, 102, 0, 0.7);
+}

@@ -1,7 +1,245 @@
 // Изначальное состояние первой сцены
 let timeOfDay = 'day';
 
+// Добавьте эту переменную вверху файла (например, после объявления sounds)
+const finalPhotoPath = '/media/final/final.jpg'; // Замените на ваш путь к фото
+
+// Звук - исправленная версия
+let masterVolume = 0.1; // ← НАЧАЛЬНАЯ ГРОМКОСТЬ
+let soundEnabled = true; // ← Изначально включен
+let currentSound = null;
+
+// Добавьте эти переменные в начало файла (после объявления masterVolume):
+let originalVolume = masterVolume;
+let playingVideosCount = 0;
+
+
+const sceneToSoundMap = {
+  'intro': 'intro',
+  'first-hike': 'day',
+  'second-hike': 'night',
+  'final': 'final'
+};
+
+const sounds = {
+  intro: new Audio('/sounds/intro.mp3'),
+  day: new Audio('/sounds/first_slowed.mp3'),
+  night: new Audio('/sounds/second.mp3'),
+  final: new Audio('/sounds/titles.mp3'),
+};
+
+// Настройка звуков (делаем это только один раз)
+Object.values(sounds).forEach(sound => {
+  sound.loop = true;
+  sound.volume = masterVolume; // Начинаем с 0
+});
+
+const soundToggleBtn = document.getElementById('sound-toggle');
+const volumeSlider = document.getElementById('sound-volume');
+
+// Начальное состояние
+volumeSlider.value = masterVolume;
+soundToggleBtn.textContent = '🔊'; // Изначально включен!
+
+// Функция плавного изменения громкости
+function fadeIn(audio, target = 0.6, duration = 800) {
+  if (!audio || !soundEnabled) return;
+  
+  audio.volume = 0;
+  const step = target / (duration / 50);
+  audio.play();
+
+  const interval = setInterval(() => {
+    audio.volume = Math.min(target, audio.volume + step);
+    if (audio.volume >= target) clearInterval(interval);
+  }, 50);
+}
+
+function fadeOut(audio, duration = 800) {
+  if (!audio) return;
+  
+  const initialVolume = audio.volume;
+  const step = initialVolume / (duration / 50);
+
+  const interval = setInterval(() => {
+    audio.volume = Math.max(0, audio.volume - step);
+    if (audio.volume <= 0) {
+      audio.pause();
+      clearInterval(interval);
+    }
+  }, 50);
+}
+
+// Функции для управления звуком при воспроизведении видео
+function handleVideoPlay() {
+  playingVideosCount++;
+  if (playingVideosCount === 1) {
+    // Запоминаем текущую громкость
+    originalVolume = masterVolume;
+    
+    // Плавно уменьшаем громкость фоновой музыки
+    if (currentSound && soundEnabled) {
+      fadeOut(currentSound, 500);
+      
+      // Устанавливаем громкость для всех звуков на минимум
+      Object.values(sounds).forEach(sound => {
+        sound.volume = 0;
+      });
+    }
+  }
+}
+
+function handleVideoPause() {
+  playingVideosCount--;
+  if (playingVideosCount <= 0) {
+    playingVideosCount = 0;
+    
+    // Восстанавливаем громкость фоновой музыки
+    if (currentSound && soundEnabled) {
+      fadeIn(currentSound, originalVolume, 500);
+      
+      // Восстанавливаем громкость для всех звуков
+      Object.values(sounds).forEach(sound => {
+        sound.volume = originalVolume;
+      });
+    }
+  }
+}
+
+// function playSound(name) {
+//   const nextSound = sounds[name];
+//   if (!nextSound) return;
+
+//   // Если звук выключен, просто обновляем текущий звук без воспроизведения
+//   if (!soundEnabled) {
+//     currentSound = nextSound;
+//     nextSound.pause();
+//     nextSound.volume = 0;
+//     return;
+//   }
+
+//   // Если это тот же самый звук, ничего не делаем
+//   if (currentSound === nextSound) return;
+
+//   // Плавно выключаем текущий звук
+//   if (currentSound) {
+//     fadeOut(currentSound);
+//   }
+
+//   // Плавно включаем новый звук
+//   currentSound = nextSound;
+//   fadeIn(currentSound, masterVolume);
+// }
+
+function playSound(name) {
+  const nextSound = sounds[name];
+  if (!nextSound) return;
+
+  // Если это тот же самый звук, ничего не делаем
+  if (currentSound === nextSound && soundEnabled) return;
+
+  // Плавно выключаем текущий звук
+  if (currentSound) {
+    fadeOut(currentSound);
+  }
+
+  // Плавно включаем новый звук
+  currentSound = nextSound;
+  
+  if (soundEnabled) {
+    fadeIn(currentSound, masterVolume);
+  } else {
+    currentSound.volume = 0;
+  }
+}
+
+// Обработчик переключения звука
+soundToggleBtn.addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+
+  if (soundEnabled) {
+    soundToggleBtn.textContent = '🔊';
+    // Включаем текущий звук
+    if (currentSound) {
+      fadeIn(currentSound, masterVolume);
+    }
+  } else {
+    soundToggleBtn.textContent = '🔇';
+    // Выключаем текущий звук
+    if (currentSound) {
+      fadeOut(currentSound);
+    }
+  }
+});
+
+
+// Обработчик громкости
+volumeSlider.addEventListener('input', () => {
+  masterVolume = parseFloat(volumeSlider.value);
+
+  // Обновляем громкость всех звуков
+  Object.values(sounds).forEach(sound => {
+    sound.volume = masterVolume;
+  });
+
+  // Обновляем иконку в зависимости от громкости
+  if (masterVolume === 0) {
+    soundToggleBtn.textContent = '🔇';
+  } else {
+    soundToggleBtn.textContent = soundEnabled ? '🔊' : '🔇';
+  }
+});
+
 // Рендер сцены
+
+// function renderSceneStep(container, step) {
+//   container.innerHTML = "";
+
+//   const stepEl = document.createElement("div");
+//   stepEl.className = "scene-step";
+
+//   const hasMedia = Array.isArray(step.media) && step.media.length > 0;
+
+//   if (!hasMedia) {
+//     stepEl.classList.add("no-media");
+//   }
+
+//   if (hasMedia) {
+//     const mediaCol = document.createElement("div");
+//     mediaCol.className = "media-column";
+
+//     step.media.forEach(item => {
+
+//       if (step.media.length === 2) {
+//         mediaCol.classList.add("two-media");
+//       }
+
+//       if (item.type === "image") {
+//         const img = document.createElement("img");
+//         img.src = item.src;
+//         mediaCol.appendChild(img);
+//       }
+
+//       if (item.type === "video") {
+//         const video = document.createElement("video");
+//         video.src = item.src;
+//         video.controls = true;
+//         mediaCol.appendChild(video);
+//       }
+//     });
+
+//     stepEl.appendChild(mediaCol);
+//   }
+
+//   const textCol = document.createElement("div");
+//   textCol.className = "text-column";
+
+//   stepEl.appendChild(textCol);
+//   container.appendChild(stepEl);
+
+//   return textCol;
+// }
+
 
 function renderSceneStep(container, step) {
   container.innerHTML = "";
@@ -20,6 +258,10 @@ function renderSceneStep(container, step) {
     mediaCol.className = "media-column";
 
     step.media.forEach(item => {
+      if (step.media.length === 2) {
+        mediaCol.classList.add("two-media");
+      }
+
       if (item.type === "image") {
         const img = document.createElement("img");
         img.src = item.src;
@@ -30,6 +272,22 @@ function renderSceneStep(container, step) {
         const video = document.createElement("video");
         video.src = item.src;
         video.controls = true;
+        
+        // Добавляем обработчики событий для видео
+        video.addEventListener('play', handleVideoPlay);
+        video.addEventListener('pause', handleVideoPause);
+        video.addEventListener('ended', handleVideoPause);
+        
+        // Обработчик для выхода из полноэкранного режима
+        video.addEventListener('fullscreenchange', function() {
+          if (!document.fullscreenElement) {
+            // Если вышли из полноэкранного режима, проверяем состояние видео
+            if (video.paused) {
+              handleVideoPause();
+            }
+          }
+        });
+        
         mediaCol.appendChild(video);
       }
     });
@@ -45,7 +303,6 @@ function renderSceneStep(container, step) {
 
   return textCol;
 }
-
 
 
 // Вступление
@@ -64,7 +321,7 @@ const introSteps = [
     ]
   },
   {
-    text: "Я помню, что первый раз в жизни увидел здесь стрекозу",
+    text: "Я помню, что первый раз в жизни увидел здесь стрекозу.",
   },
   {
     text: "Нам(13) было интересно посетить это место зимой, идя по снежному лесу.",
@@ -121,7 +378,7 @@ function typeText(container, text, onFinish) {
   container.appendChild(p);
 
   const interval = setInterval(() => {
-    p.textContent += text[i];
+    p.innerHTML += text[i];
     i++;
 
     if (i >= text.length) {
@@ -132,15 +389,21 @@ function typeText(container, text, onFinish) {
 }
 
 startBtn.addEventListener("click", () => {
+  // // Включаем звук для вступления
+  // playSound('intro');
+
   introSection.classList.add("started");
   startBtn.hidden = true;
-
 
   introContainer.style.display = "flex";
   const logo = document.querySelector(".intro-logo");
   if (logo) {
     logo.style.opacity = "0";
     logo.style.transform = "scale(0.95)";
+  }
+
+  if (soundEnabled) {
+    playSound('intro');
   }
 
   playIntroStep();
@@ -157,7 +420,7 @@ nextBtn.addEventListener("click", () => {
 // Первая ходка
 const firstHikeSteps = [
   {
-    text: "Илья, Никита (Чипик) и Никита (Пого) участвовали в первой ходке.",
+    text: "Илья, Никита(Чипик) и Никита(Пого) участвовали в первой ходке.",
     media: [
       { type: "image", src: "media/first/chair.jpg" }
     ]
@@ -181,14 +444,19 @@ const firstHikeSteps = [
     ]
   },
   {
-    text: "Наконец-то мы пришли на глинку, только полюбуйтесь этими видами! Далее мы пытались развести костер, но все наши попытки были тщетны",
+    text: "Наконец-то мы пришли на свинарник. Помню как катался на лыжах по склону, который ведет к пруду.",
     media: [
-      { type: "image", src: "media/first/3.jpg"},
+      { type: "image", src: "media/first/3.jpg"}
+    ]
+  },
+  {
+    text: "Далее мы пытались развести костер, в ход шло всё: зажигалки, бумага, береста. Однако все наши попытки были тщетны.",
+    media: [
       { type: "image", src: "media/first/4.jpg"}
     ]
   },
   {
-    text: "Мы поняли, что должны вернуться в этом место ночью и развести огонь. Для этого мы созвали всю тринашку. Поставленная задача должна быть выполнена",
+    text: "Мы поняли, что должны вернуться в это место ночью и развести огонь. Для этого мы созвали всю тринашку. Поставленная задача будет выполнена!",
     media: [
       { type: "video", src: "media/first/circle_tg.MP4"}
     ],
@@ -209,10 +477,14 @@ firstNextBtn.addEventListener('click', () => {
 });
 
 function playFirstHikeStep() {
+  console.log('playFirstHikeStep вызван, индекс:', firstHikeIndex); // Для отладки
+
   firstNextBtn.hidden = true;
 
   if (firstHikeIndex < firstHikeSteps.length) {
     const step = firstHikeSteps[firstHikeIndex];
+
+    console.log('Шаг для отображения:', step); // Для отладки
 
     const textContainer = renderSceneStep(firstContainer, step);
 
@@ -263,7 +535,10 @@ finishFirstHikeBtn.addEventListener('click', () => {
 
 const secondHikeSteps = [
   {
-    text: "И вот наступила ночь, мы собрались на вторую ходку. Более подготовленные и с боевым настроем. МЫ ДОЛЖНЫ РАЗВЕСТИ КОСТЕР!",
+    text: "И вот наступила ночь... К нам присоединились: Матвей(Мотор), Дима(Курсед) и Артем.",
+  },
+  {
+    text: "Мы собрались на вторую ходку. Более подготовленные и с боевым настроем. КОСТЕР БУДЕТ РАЗВЕДЕН!",
   },
   {
     text: "Прямо перед полянкой нас встретил Хранитель Свинарника. Мы дали ему дань(винстон икстайл), после чего он пропустил нас к нужному месту.",
@@ -278,7 +553,7 @@ const secondHikeSteps = [
     ]
   },
   {
-    text: "Мы общались, пили пиво и наслаждались этим приятным моментом! ",
+    text: "Мы общались, пили жидкий хлеб и наслаждались этим приятным моментом! ",
     media: [
       { type: "video", src: "media/second/1_second.mov" }
     ]
@@ -290,20 +565,20 @@ const secondHikeSteps = [
     ]
   },
   {
-    text: "Так наше уютное место выглядело из далека. Это Тема и Курсед едят сосиски, которые стоят по 40р за упаковку",
+    text: "Так наше уютное место выглядело издалека. Это Тема и Курсед едят сосиски, которые стоят по 40р за упаковку",
     media: [
       { type: "image", src: "media/second/eat_second.jpg" }
     ]
     
   },
   {
-    text: "Когда мы решили уже уходить, то поняли, что у нас осталась бутылка с розжигом и ее надо сжечь. Получилось такое мощное пламя!",
+    text: "Когда мы решили уже уходить, то поняли, что у нас осталась бутылка с розжигом и ее надо утилизировать. ",
     media: [
       { type: "video", src: "media/second/burn_second.MOV" }
     ]
   },
    {
-    text: "Четкий огонь!",
+    text: "Напоследок получилось такое мощное пламя! И на этой прекрасной ноте мы заканчиваем наш поход.",
     media: [
       { type: "image", src: "media/second/burn.jpg" }
     ],
@@ -368,36 +643,26 @@ function playSecondHikeStep() {
   }
 }
 
-// Автоматический запуск первой сцены при переходе
-// function showScene(id) {
-//     scenes.forEach(scene => scene.classList.remove('active'));
-
-//     const nextScene = document.getElementById(id);
-//     nextScene.classList.add('active');
-
-//     if (id === 'first-hike') {
-//         setTime('day');
-//         // Сброс индекса при переходе
-//         secondHikeIndex = 0;
-//     }
-
-//     if (id === 'second-hike') {
-//         setTime('night');
-//         // Сброс индекса при переходе
-//         secondHikeIndex = 0;
-//         // Очистка контента при переходе на сцену
-//         secondContainer.innerHTML = "";
-//         // Скрываем кнопку "Подвести итоги" при начале сцены
-//         finishSecondHikeBtn.hidden = true;
-//         // Показываем кнопку "Далее"
-//         secondNextBtn.hidden = false;
-//     }
-// }
-
 finishSecondHikeBtn.addEventListener('click', () => {
-  showScene('final');
-  setTime('night');
 
+  // showScene('final');
+  // setTime('night');
+
+  // renderCredits();
+  // restartCredits();
+  // hideCreditsAfterAnimation();
+
+  scenes.forEach(scene => scene.classList.remove('active'));
+  const finalScene = document.getElementById('final');
+  finalScene.classList.add('active');
+  
+  // Устанавливаем ночное время
+  setTime('night');
+  
+  // Включаем финальную музыку
+  playSound('final');
+  
+  // Показываем титры
   renderCredits();
   restartCredits();
   hideCreditsAfterAnimation();
@@ -411,7 +676,7 @@ const participants = [
   "Никита (Пого)",
   "Матвей (Мотор)",
   "Дима (Курсед)",
-  "Артем"
+  "Артем (Артем)"
 ];
 
 function renderCredits() {
@@ -433,7 +698,7 @@ function renderCredits() {
   container.appendChild(spacer);
 
   const footer = document.createElement('p');
-  footer.textContent = "Зима • Лес • Свинарник";
+  footer.textContent = "Тринашка • Лес • Свинарник";
   container.appendChild(footer);
 
 }
@@ -451,6 +716,93 @@ function hideCreditsAfterAnimation() {
 
   credits.addEventListener('animationend', () => {
     credits.style.display = 'none';
+  }, { once: true });
+}
+
+
+// Фото после финала
+// function hideCreditsAfterAnimation() {
+//   const credits = document.querySelector('.credits-content');
+//   const finalPhotoContainer = document.getElementById('final-photo-container');
+//   const finalPhoto = document.getElementById('final-photo');
+
+//   // Загружаем финальное фото
+//   finalPhoto.src = finalPhotoPath;
+
+//   credits.addEventListener('animationend', () => {
+//     // Скрываем титры
+//     credits.style.display = 'none';
+    
+//     // Показываем контейнер для фото
+//     finalPhotoContainer.style.display = 'flex';
+    
+//     // Запускаем анимацию появления
+//     setTimeout(() => {
+//       finalPhotoContainer.classList.add('show');
+//     }, 300);
+    
+//   }, { once: true });
+// }
+
+
+function hideCreditsAfterAnimation() {
+  const credits = document.querySelector('.credits-content');
+  const finalPhotoContainer = document.getElementById('final-photo-container');
+  const finalPhoto = document.getElementById('final-photo');
+  const restartButton = document.getElementById('restart-button');
+
+  // Загружаем финальное фото
+  finalPhoto.src = finalPhotoPath;
+
+  // Используем более точное событие для определения, когда титры закончились
+  let animationEnded = false;
+  
+  const checkIfCreditsFinished = () => {
+    if (animationEnded) return;
+    
+    // Получаем текущую позицию титров
+    const creditsRect = credits.getBoundingClientRect();
+    
+    // Если верхний край титров достиг верха экрана (или выше)
+    if (creditsRect.bottom <= 0) {
+      animationEnded = true;
+      
+      // Скрываем титры
+      credits.style.display = 'none';
+      credits.style.animation = 'none'; // Останавливаем анимацию
+      
+      // Показываем контейнер для фото
+      finalPhotoContainer.style.display = 'flex';
+      
+      // Запускаем анимацию появления через небольшой промежуток времени
+      setTimeout(() => {
+        finalPhotoContainer.classList.add('show');
+        
+        // Показываем кнопку перезапуска через 3 секунды
+        setTimeout(() => {
+          restartButton.style.display = 'block';
+        }, 3000);
+      }, 500);
+    }
+  };
+
+  // Проверяем каждые 100ms, достигли ли титры верха экрана
+  const checkInterval = setInterval(checkIfCreditsFinished, 100);
+
+  // Также слушаем событие окончания анимации как fallback
+  credits.addEventListener('animationend', () => {
+    clearInterval(checkInterval);
+    if (!animationEnded) {
+      // Если анимация закончилась, но мы еще не скрыли титры
+      credits.style.display = 'none';
+      finalPhotoContainer.style.display = 'flex';
+      setTimeout(() => {
+        finalPhotoContainer.classList.add('show');
+        setTimeout(() => {
+          restartButton.style.display = 'block';
+        }, 3000);
+      }, 500);
+    }
   }, { once: true });
 }
 
@@ -472,7 +824,7 @@ function setTime(time) {
   }
 
   if (time === "night") {
-    showParticles();      // ← ВАЖНО
+    showParticles();
     enableNightParticles();
   }
 }
@@ -481,56 +833,47 @@ function setTime(time) {
 // Поиск всех сцен
 const scenes = document.querySelectorAll('.scene');
 
-// Раскрывает конкретную сцену по передаваемому id
-// function showScene(id) {
-//     scenes.forEach(scene => scene.classList.remove('active'));
-
-//     const nextScene = document.getElementById(id);
-//     nextScene.classList.add('active')
-
-//     if (id === 'first-hike') {
-//         setTime('day')
-//     }
-
-//     if (id === 'second-hike') {
-//         setTime('night')
-//     }
-// }
-
-// Раскрывает конкретную сцену по передаваемому id
 function showScene(id) {
-    scenes.forEach(scene => scene.classList.remove('active'));
+  // Останавливаем все видео перед переходом на новую сцену
+  document.querySelectorAll('video').forEach(video => {
+    video.pause();
+  });
+  // Сбрасываем счетчик воспроизводящихся видео
+  playingVideosCount = 0;
 
-    const nextScene = document.getElementById(id);
-    nextScene.classList.add('active');
+  // Восстанавливаем громкость фоновой музыки
+  if (currentSound && soundEnabled) {
+    fadeIn(currentSound, originalVolume, 300);
+  }
 
-    if (id === 'first-hike') {
-        setTime('day');
-        // Сброс индекса при переходе
-        firstHikeIndex = 0;
-        // Очистка контента
-        firstContainer.innerHTML = "";
-        // Скрываем кнопку перехода
-        finishFirstHikeBtn.hidden = true;
-        // Показываем кнопку "Далее"
-        firstNextBtn.hidden = false;
-        // Автоматически начинаем первую сцену
-        playFirstHikeStep();
-    }
+  scenes.forEach(scene => scene.classList.remove('active'));
 
-    if (id === 'second-hike') {
-        setTime('night');
-        // Сброс индекса при переходе
-        secondHikeIndex = 0;
-        // Очистка контента при переходе на сцену
-        secondContainer.innerHTML = "";
-        // Скрываем кнопку "Подвести итоги" при начале сцены
-        finishSecondHikeBtn.hidden = true;
-        // Показываем кнопку "Далее"
-        secondNextBtn.hidden = false;
-        // Автоматически начинаем вторую сцену
-        playSecondHikeStep();
-    }
+  const nextScene = document.getElementById(id);
+  nextScene.classList.add('active');
+
+    // Воспроизводим звук для текущей сцены
+  const soundToPlay = sceneToSoundMap[id];
+  if (soundToPlay) {
+    playSound(soundToPlay);
+  }
+
+  if (id === 'first-hike') {
+      setTime('day');
+      firstHikeIndex = 0;
+      firstContainer.innerHTML = "";
+      finishFirstHikeBtn.hidden = true;
+      firstNextBtn.hidden = false;
+      playFirstHikeStep();
+  }
+
+  if (id === 'second-hike') {
+      setTime('night');
+      secondHikeIndex = 0;
+      secondContainer.innerHTML = "";
+      finishSecondHikeBtn.hidden = true;
+      secondNextBtn.hidden = false;
+      playSecondHikeStep();
+  }
 }
 
 // Эффект снега
