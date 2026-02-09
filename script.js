@@ -1,3 +1,9 @@
+// Отладка
+// В самом верху файла добавьте
+// console.log('=== СКРИПТ ЗАГРУЖЕН ===');
+// console.log('Доступные звуки:', Object.keys(sounds));
+// console.log('GSAP доступен:', typeof gsap !== 'undefined');
+
 // Изначальное состояние первой сцены
 let timeOfDay = 'day';
 
@@ -106,49 +112,77 @@ function handleVideoPause() {
   }
 }
 
-// function playSound(name) {
-//   const nextSound = sounds[name];
-//   if (!nextSound) return;
-
-//   // Если звук выключен, просто обновляем текущий звук без воспроизведения
-//   if (!soundEnabled) {
-//     currentSound = nextSound;
-//     nextSound.pause();
-//     nextSound.volume = 0;
-//     return;
-//   }
-
-//   // Если это тот же самый звук, ничего не делаем
-//   if (currentSound === nextSound) return;
-
-//   // Плавно выключаем текущий звук
-//   if (currentSound) {
-//     fadeOut(currentSound);
-//   }
-
-//   // Плавно включаем новый звук
-//   currentSound = nextSound;
-//   fadeIn(currentSound, masterVolume);
-// }
 
 function playSound(name) {
+  console.log('playSound вызван с аргументом:', name);
+  
   const nextSound = sounds[name];
-  if (!nextSound) return;
+  if (!nextSound) {
+    console.error('Звук не найден:', name);
+    return;
+  }
 
   // Если это тот же самый звук, ничего не делаем
-  if (currentSound === nextSound && soundEnabled) return;
+  if (currentSound === nextSound) {
+    console.log('Этот звук уже играет');
+    return;
+  }
 
-  // Плавно выключаем текущий звук
-  if (currentSound) {
-    fadeOut(currentSound);
+  // Останавливаем ВСЕ звуки перед воспроизведением нового
+  Object.values(sounds).forEach(sound => {
+    if (sound !== nextSound) {
+      // Плавно выключаем и полностью останавливаем
+      sound.pause();
+      sound.currentTime = 0;
+      sound.volume = 0;
+    }
+  });
+
+  // Если был текущий звук, плавно его выключаем
+   if (currentSound && currentSound !== nextSound) {
+    console.log('Плавно выключаем предыдущий звук');
+    
+    // Создаем копию текущего звука для плавного выключения
+    const prevSound = currentSound;
+    const prevVolume = prevSound.volume;
+    
+    // Плавно уменьшаем громкость текущего звука
+    const fadeOutInterval = setInterval(() => {
+      prevSound.volume = Math.max(0, prevSound.volume - (prevVolume / 20));
+      if (prevSound.volume <= 0.01) {
+        clearInterval(fadeOutInterval);
+        prevSound.pause();
+        prevSound.currentTime = 0;
+        prevSound.volume = 0;
+      }
+    }, 50);
   }
 
   // Плавно включаем новый звук
   currentSound = nextSound;
   
-  if (soundEnabled) {
-    fadeIn(currentSound, masterVolume);
+   if (soundEnabled) {
+    console.log('Плавно включаем новый звук:', name);
+    
+    // Сбрасываем время и громкость
+    currentSound.currentTime = 0;
+    currentSound.volume = 0;
+    
+    // Начинаем воспроизведение
+    currentSound.play().catch(error => {
+      console.log('Ошибка воспроизведения:', error);
+    });
+    
+    // Плавное увеличение громкости (немного медленнее)
+    const fadeInInterval = setInterval(() => {
+      currentSound.volume = Math.min(masterVolume, currentSound.volume + (masterVolume / 20));
+      if (currentSound.volume >= masterVolume - 0.01) {
+        clearInterval(fadeInInterval);
+        currentSound.volume = masterVolume;
+      }
+    }, 50);
   } else {
+    console.log('Звук отключен, не включаем');
     currentSound.volume = 0;
   }
 }
@@ -192,55 +226,6 @@ volumeSlider.addEventListener('input', () => {
 
 // Рендер сцены
 
-// function renderSceneStep(container, step) {
-//   container.innerHTML = "";
-
-//   const stepEl = document.createElement("div");
-//   stepEl.className = "scene-step";
-
-//   const hasMedia = Array.isArray(step.media) && step.media.length > 0;
-
-//   if (!hasMedia) {
-//     stepEl.classList.add("no-media");
-//   }
-
-//   if (hasMedia) {
-//     const mediaCol = document.createElement("div");
-//     mediaCol.className = "media-column";
-
-//     step.media.forEach(item => {
-
-//       if (step.media.length === 2) {
-//         mediaCol.classList.add("two-media");
-//       }
-
-//       if (item.type === "image") {
-//         const img = document.createElement("img");
-//         img.src = item.src;
-//         mediaCol.appendChild(img);
-//       }
-
-//       if (item.type === "video") {
-//         const video = document.createElement("video");
-//         video.src = item.src;
-//         video.controls = true;
-//         mediaCol.appendChild(video);
-//       }
-//     });
-
-//     stepEl.appendChild(mediaCol);
-//   }
-
-//   const textCol = document.createElement("div");
-//   textCol.className = "text-column";
-
-//   stepEl.appendChild(textCol);
-//   container.appendChild(stepEl);
-
-//   return textCol;
-// }
-
-
 function renderSceneStep(container, step) {
   container.innerHTML = "";
 
@@ -271,23 +256,79 @@ function renderSceneStep(container, step) {
       if (item.type === "video") {
         const video = document.createElement("video");
         video.src = item.src;
-        video.controls = true;
-        
-        // Добавляем обработчики событий для видео
+
+        // Для круглого видео не добавляем controls, но добавляем клик
+        if (item.circle) {
+          video.classList.add('circle-video');
+          // НЕ добавляем video.controls = true
+
+          // Обработчик клика для воспроизведения/паузы
+          video.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (video.paused) {
+              video.play().catch(e => {
+                console.log("Ошибка воспроизведения:", e);
+              });
+            } else {
+              video.pause();
+            }
+          });
+
+          // Также добавляем обработчик клавиши пробел
+          video.addEventListener('keydown', function(e) {
+            if (e.code === 'Space') {
+              e.preventDefault();
+              if (video.paused) {
+                video.play();
+              } else {
+                video.pause();
+              }
+            }
+          });
+
+          // Делаем видео focusable для клавиатуры
+          video.tabIndex = 0;
+
+          // Показываем controls только в полноэкранном режиме
+          video.addEventListener('fullscreenchange', function() {
+            if (document.fullscreenElement === video) {
+              video.controls = true;
+            } else {
+              video.controls = false;
+            }
+          });
+
+          // Обработчик двойного клика для полноэкранного режима
+          video.addEventListener('dblclick', function() {
+            if (video.requestFullscreen) {
+              if (!document.fullscreenElement) {
+                video.requestFullscreen();
+              } else {
+                document.exitFullscreen();
+              }
+            }
+          });
+
+        } else {
+          video.controls = true; // Для обычных видео оставляем controls
+        }
+
+        // Стандартные обработчики событий для видео
         video.addEventListener('play', handleVideoPlay);
         video.addEventListener('pause', handleVideoPause);
         video.addEventListener('ended', handleVideoPause);
-        
+
         // Обработчик для выхода из полноэкранного режима
         video.addEventListener('fullscreenchange', function() {
           if (!document.fullscreenElement) {
-            // Если вышли из полноэкранного режима, проверяем состояние видео
             if (video.paused) {
               handleVideoPause();
             }
           }
         });
-        
+
         mediaCol.appendChild(video);
       }
     });
@@ -458,7 +499,7 @@ const firstHikeSteps = [
   {
     text: "Мы поняли, что должны вернуться в это место ночью и развести огонь. Для этого мы созвали всю тринашку. Поставленная задача будет выполнена!",
     media: [
-      { type: "video", src: "media/first/circle_tg.MP4"}
+      { type: "video", src: "media/first/circle_tg.MP4", circle: true}
     ],
     isLast: true
   }
@@ -840,6 +881,11 @@ function showScene(id) {
   });
   // Сбрасываем счетчик воспроизводящихся видео
   playingVideosCount = 0;
+
+  // Если есть звук, приглушаем его перед переходом
+  if (currentSound) {
+    currentSound.volume = 0;
+  }
 
   // Восстанавливаем громкость фоновой музыки
   if (currentSound && soundEnabled) {
