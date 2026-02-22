@@ -720,7 +720,7 @@ const secondHikeSteps = [
   {
     text: "Когда мы решили уже уходить, то поняли, что у нас осталась бутылка с розжигом и ее надо утилизировать. ",
     media: [
-      { type: "video", src: "media/second/burn_second.MOV", poster: "media/second/burn_second_poster.png" }
+      { type: "video", src: "media/second/burn_second.mov", poster: "media/second/burn_second_poster.png" }
     ]
   },
    {
