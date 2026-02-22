@@ -21,7 +21,7 @@ const sceneToSoundMap = {
   'final': 'final'
 };
 
-// Ожидание загрузки всех изображений и метаданных видео внутри контейнера
+// Ожидание загрузки всех изображений и, при необходимости, метаданных видео
 function waitForMediaInContainer(container) {
   const mediaElements = container.querySelectorAll('img, video');
   const promises = Array.from(mediaElements).map(el => {
@@ -29,15 +29,27 @@ function waitForMediaInContainer(container) {
       if (el.complete) return Promise.resolve();
       return new Promise(resolve => {
         el.addEventListener('load', resolve, { once: true });
-        el.addEventListener('error', resolve, { once: true }); // не блокируем при ошибке
-      });
-    } else if (el.tagName === 'VIDEO') {
-      // Проверяем, загружены ли метаданные (readyState >= HAVE_METADATA)
-      if (el.readyState >= 1) return Promise.resolve();
-      return new Promise(resolve => {
-        el.addEventListener('loadeddata', resolve, { once: true });
         el.addEventListener('error', resolve, { once: true });
       });
+    } else if (el.tagName === 'VIDEO') {
+      // Если у видео есть постер, считаем что визуальный контент уже доступен
+      if (el.poster) {
+        // Проверяем, загрузился ли постер (это отдельное изображение)
+        const posterImg = new Image();
+        posterImg.src = el.poster;
+        if (posterImg.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          posterImg.addEventListener('load', resolve, { once: true });
+          posterImg.addEventListener('error', resolve, { once: true });
+        });
+      } else {
+        // Без постера ждём загрузки метаданных видео
+        if (el.readyState >= 1) return Promise.resolve();
+        return new Promise(resolve => {
+          el.addEventListener('loadeddata', resolve, { once: true });
+          el.addEventListener('error', resolve, { once: true });
+        });
+      }
     }
   });
   return Promise.all(promises);
