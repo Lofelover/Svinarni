@@ -924,7 +924,7 @@ input[type="reset"],
     width: 100%;
     max-width: 100%;
     flex: none;
-    font-size: clamp(20px, 5vw, 24px);
+    font-size: clamp(18px, 5vw, 22px);
     line-height: 1.5;
     text-align: justify;
     padding: 0 10px;

@@ -21,6 +21,28 @@ const sceneToSoundMap = {
   'final': 'final'
 };
 
+// Ожидание загрузки всех изображений и метаданных видео внутри контейнера
+function waitForMediaInContainer(container) {
+  const mediaElements = container.querySelectorAll('img, video');
+  const promises = Array.from(mediaElements).map(el => {
+    if (el.tagName === 'IMG') {
+      if (el.complete) return Promise.resolve();
+      return new Promise(resolve => {
+        el.addEventListener('load', resolve, { once: true });
+        el.addEventListener('error', resolve, { once: true }); // не блокируем при ошибке
+      });
+    } else if (el.tagName === 'VIDEO') {
+      // Проверяем, загружены ли метаданные (readyState >= HAVE_METADATA)
+      if (el.readyState >= 1) return Promise.resolve();
+      return new Promise(resolve => {
+        el.addEventListener('loadeddata', resolve, { once: true });
+        el.addEventListener('error', resolve, { once: true });
+      });
+    }
+  });
+  return Promise.all(promises);
+}
+
 const sounds = {
   intro: new Audio('/sounds/intro.mp3'),
   day: new Audio('/sounds/first_slowed.mp3'),
@@ -274,10 +296,6 @@ function renderSceneStep(container, step) {
       if (item.type === "image") {
         const img = document.createElement("img");
         img.src = item.src;
-        if (item.width && item.height) {
-          img.width = item.width;
-          img.height = item.height;
-        }
         mediaCol.appendChild(img);
       }
 
@@ -292,11 +310,6 @@ function renderSceneStep(container, step) {
 
           if (item.poster) {
             video.poster = item.poster;   // ← добавляем постер
-          }
-
-          if (item.width && item.height) {
-            video.width = item.width;
-            video.height = item.height;
           }
 
           video.classList.add('circle-video');
@@ -458,7 +471,7 @@ const introSteps = [
   {
     text: "Свинарник — это не просто пруд. Теперь для тринашки это особое место. ",
     media: [
-      { type: "image", src: "/media/intro/map.jpg", width: 574 , height: 652 }
+      { type: "image", src: "/media/intro/map.jpg" }
     ]
   },
   {
@@ -479,38 +492,65 @@ const introSteps = [
   }
 ];
 
+// function playIntroStep() {
+//   nextBtn.hidden = true;
+
+//   if (introIndex < introSteps.length) {
+//     const step = introSteps[introIndex];
+
+//     const textContainer = renderSceneStep(introContainer, step);
+
+//     typeText(textContainer, step.text, () => {
+//       nextBtn.hidden = false;
+//       introIndex++;
+//     });
+
+//   } else {
+//     introContainer.innerHTML = `
+//       <div class="scene-step no-media">
+//         <div class="text-column">
+//           <p>   
+//             История начинается…
+//           </p>
+//         </div>
+//       </div>
+//     `;
+
+//     nextBtn.hidden = false;
+//     nextBtn.textContent = "Перейти к первому походу";
+
+//     introIndex = introSteps.length + 1;
+//   }
+// }
+
 function playIntroStep() {
   nextBtn.hidden = true;
 
   if (introIndex < introSteps.length) {
     const step = introSteps[introIndex];
-
     const textContainer = renderSceneStep(introContainer, step);
 
-    typeText(textContainer, step.text, () => {
-      nextBtn.hidden = false;
-      introIndex++;
+    // Ждём загрузки всех медиа в introContainer
+    waitForMediaInContainer(introContainer).then(() => {
+      typeText(textContainer, step.text, () => {
+        nextBtn.hidden = false;
+        introIndex++;
+      });
     });
 
   } else {
     introContainer.innerHTML = `
       <div class="scene-step no-media">
         <div class="text-column">
-          <p>   
-            История начинается…
-          </p>
+          <p>История начинается…</p>
         </div>
       </div>
     `;
-
     nextBtn.hidden = false;
     nextBtn.textContent = "Перейти к первому походу";
-
     introIndex = introSteps.length + 1;
   }
 }
-
-// <p style="font-size: 36px;"></p>
 
 
 let introIndex = 0;
@@ -630,49 +670,95 @@ firstNextBtn.addEventListener('click', () => {
   playFirstHikeStep();
 });
 
-function playFirstHikeStep() {
-  console.log('playFirstHikeStep вызван, индекс:', firstHikeIndex); // Для отладки
+// function playFirstHikeStep() {
+//   console.log('playFirstHikeStep вызван, индекс:', firstHikeIndex); // Для отладки
 
+//   firstNextBtn.hidden = true;
+
+//   if (firstHikeIndex < firstHikeSteps.length) {
+//     const step = firstHikeSteps[firstHikeIndex];
+
+//     console.log('Шаг для отображения:', step); // Для отладки
+
+//     const textContainer = renderSceneStep(firstContainer, step);
+
+
+//     // GSAP анимация текста
+//     const mediaItems = firstContainer.querySelectorAll(
+//       '.media-column img, .media-column video'
+//     );
+
+//     if (mediaItems.length) {
+//       gsap.fromTo(
+//         mediaItems,
+//         {
+//           opacity: 0,
+//           scale: 0.96
+//         },
+//         {
+//           opacity: 1,
+//           scale: 1,
+//           duration: 0.8,
+//           ease: 'power3.out',
+//           stagger: mediaItems.length > 1 ? 0.15 : 0
+//         }
+//       );
+//     }
+    
+//     // Печать текста
+//     typeText(textContainer, step.text, () => {
+//       if (step.isLast) {
+//         firstNextBtn.hidden = true;
+//         finishFirstHikeBtn.hidden = false;
+//       } else {
+//         firstNextBtn.hidden = false;
+//       }
+//     });
+
+//   } else {
+//     finishFirstHikeBtn.hidden = false;
+//   }
+// }
+
+function playFirstHikeStep() {
+  console.log('playFirstHikeStep вызван, индекс:', firstHikeIndex);
   firstNextBtn.hidden = true;
 
   if (firstHikeIndex < firstHikeSteps.length) {
     const step = firstHikeSteps[firstHikeIndex];
-
-    console.log('Шаг для отображения:', step); // Для отладки
+    console.log('Шаг для отображения:', step);
 
     const textContainer = renderSceneStep(firstContainer, step);
 
-
-    // GSAP анимация текста
-    const mediaItems = firstContainer.querySelectorAll(
-      '.media-column img, .media-column video'
-    );
-
-    if (mediaItems.length) {
-      gsap.fromTo(
-        mediaItems,
-        {
-          opacity: 0,
-          scale: 0.96
-        },
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.8,
-          ease: 'power3.out',
-          stagger: mediaItems.length > 1 ? 0.15 : 0
-        }
+    // Ждём загрузки медиа
+    waitForMediaInContainer(firstContainer).then(() => {
+      // GSAP анимация для медиа (после загрузки)
+      const mediaItems = firstContainer.querySelectorAll(
+        '.media-column img, .media-column video'
       );
-    }
-    
-    // Печать текста
-    typeText(textContainer, step.text, () => {
-      if (step.isLast) {
-        firstNextBtn.hidden = true;
-        finishFirstHikeBtn.hidden = false;
-      } else {
-        firstNextBtn.hidden = false;
+      if (mediaItems.length) {
+        gsap.fromTo(
+          mediaItems,
+          { opacity: 0, scale: 0.96 },
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.8,
+            ease: 'power3.out',
+            stagger: mediaItems.length > 1 ? 0.15 : 0
+          }
+        );
       }
+
+      // Печать текста
+      typeText(textContainer, step.text, () => {
+        if (step.isLast) {
+          firstNextBtn.hidden = true;
+          finishFirstHikeBtn.hidden = false;
+        } else {
+          firstNextBtn.hidden = false;
+        }
+      });
     });
 
   } else {
@@ -752,44 +838,84 @@ secondNextBtn.addEventListener('click', () => {
   playSecondHikeStep();
 });
 
+// function playSecondHikeStep() {
+//   secondNextBtn.hidden = true;
+
+//   if (secondHikeIndex < secondHikeSteps.length) {
+//     const step = secondHikeSteps[secondHikeIndex];
+
+//     const textContainer = renderSceneStep(secondContainer, step);
+
+//     // GSAP анимация для медиа
+//     const mediaItems = secondContainer.querySelectorAll(
+//       '.media-column img, .media-column video'
+//     );
+
+//     if (mediaItems.length) {
+//       gsap.fromTo(
+//         mediaItems,
+//         {
+//           opacity: 0,
+//           scale: 0.96
+//         },
+//         {
+//           opacity: 1,
+//           scale: 1,
+//           duration: 0.8,
+//           ease: 'power3.out',
+//           stagger: mediaItems.length > 1 ? 0.15 : 0
+//         }
+//       );
+//     }
+    
+//     // Печать текста
+//     typeText(textContainer, step.text, () => {
+//        if (step.isLast) {
+//         secondNextBtn.hidden = true;
+//         finishSecondHikeBtn.hidden = false;
+//       } else {
+//         secondNextBtn.hidden = false;
+//       }
+//     });
+
+//   } else {
+//     finishSecondHikeBtn.hidden = false;
+//   }
+// }
+
 function playSecondHikeStep() {
   secondNextBtn.hidden = true;
 
   if (secondHikeIndex < secondHikeSteps.length) {
     const step = secondHikeSteps[secondHikeIndex];
-
     const textContainer = renderSceneStep(secondContainer, step);
 
-    // GSAP анимация для медиа
-    const mediaItems = secondContainer.querySelectorAll(
-      '.media-column img, .media-column video'
-    );
-
-    if (mediaItems.length) {
-      gsap.fromTo(
-        mediaItems,
-        {
-          opacity: 0,
-          scale: 0.96
-        },
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.8,
-          ease: 'power3.out',
-          stagger: mediaItems.length > 1 ? 0.15 : 0
-        }
+    waitForMediaInContainer(secondContainer).then(() => {
+      const mediaItems = secondContainer.querySelectorAll(
+        '.media-column img, .media-column video'
       );
-    }
-    
-    // Печать текста
-    typeText(textContainer, step.text, () => {
-       if (step.isLast) {
-        secondNextBtn.hidden = true;
-        finishSecondHikeBtn.hidden = false;
-      } else {
-        secondNextBtn.hidden = false;
+      if (mediaItems.length) {
+        gsap.fromTo(
+          mediaItems,
+          { opacity: 0, scale: 0.96 },
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.8,
+            ease: 'power3.out',
+            stagger: mediaItems.length > 1 ? 0.15 : 0
+          }
+        );
       }
+
+      typeText(textContainer, step.text, () => {
+        if (step.isLast) {
+          secondNextBtn.hidden = true;
+          finishSecondHikeBtn.hidden = false;
+        } else {
+          secondNextBtn.hidden = false;
+        }
+      });
     });
 
   } else {
