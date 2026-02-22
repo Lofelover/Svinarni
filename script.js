@@ -274,6 +274,10 @@ function renderSceneStep(container, step) {
       if (item.type === "image") {
         const img = document.createElement("img");
         img.src = item.src;
+        if (item.width && item.height) {
+          img.width = item.width;
+          img.height = item.height;
+        }
         mediaCol.appendChild(img);
       }
 
@@ -288,6 +292,11 @@ function renderSceneStep(container, step) {
 
           if (item.poster) {
             video.poster = item.poster;   // ← добавляем постер
+          }
+
+          if (item.width && item.height) {
+            video.width = item.width;
+            video.height = item.height;
           }
 
           video.classList.add('circle-video');
@@ -449,7 +458,7 @@ const introSteps = [
   {
     text: "Свинарник — это не просто пруд. Теперь для тринашки это особое место. ",
     media: [
-      { type: "image", src: "/media/intro/map.jpg" }
+      { type: "image", src: "/media/intro/map.jpg", width: 574 , height: 652 }
     ]
   },
   {
