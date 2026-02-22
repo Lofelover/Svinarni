@@ -110,17 +110,6 @@ body[data-time="night"] {
   position: relative;
 }
 
-/* #intro .intro-logo {
-  max-width: min(400px, 40vw);
-  max-height: min(440px, 45vh);
-  width: auto;
-  height: auto;
-  border-radius: 15%;
-  opacity: 0.9;
-  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.25));
-  transition: opacity 0.4s ease, transform 0.4s ease;
-} */
-
 #intro .intro-logo {
   max-width: min(400px, 40vw);
   max-height: min(440px, 45vh);
@@ -139,7 +128,6 @@ body[data-time="night"] {
   /* Отключаем фильтры, если они есть */
   filter: none;
 }
-
 
 /* Когда начальная сцена активирована (начат рассказ) */
 #intro.started .intro-logo {
@@ -314,7 +302,6 @@ video:-webkit-full-screen {
   margin: 0;
   padding: 0;
   width: 100%;
-  /* Убираем любые влияния на высоту */
   line-height: 1.6;
 }
 
@@ -402,7 +389,7 @@ video:-webkit-full-screen {
   text-align: center;
   font-size: clamp(24px, 4vw, 30px);
   line-height: 2;
-  animation: credits-roll 100s linear forwards;
+  animation: credits-roll 80s linear forwards;
   /* font-family: 'Inter', sans-serif; */
   font-family: 'Bebas Neue', sans-serif;
   letter-spacing: 2px;
@@ -434,6 +421,23 @@ video:-webkit-full-screen {
   to {
     transform: translateY(calc(-100% - 100vh));
   }
+}
+
+/* Стили для футера титров (по умолчанию - в строку) */
+.footer-credits {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5em;
+  font-size: inherit;
+}
+
+/* Добавляем разделитель " • " между элементами (кроме последнего) */
+.footer-credits span:not(:last-child)::after {
+  content: " •";
+  margin-left: 0.3em;
+  white-space: nowrap;
 }
 
 /* Финальное фото */
@@ -785,14 +789,14 @@ input[type="reset"],
   }
 
   .text-column {
-    max-width: 500px; /* делаем текст уже, чтобы не упирался в края */
+    max-width: 500px;
     min-width: 300px;
     width: auto;
     font-size: 28px;
   }
 
   .media-column {
-    width: 350px; /* уменьшаем размер медиа */
+    width: 350px;
   }
 
   .media-column img,
@@ -877,14 +881,13 @@ input[type="reset"],
 
   }
 
-
   .scene-step {
     flex-direction: column;
     gap: 25px;
     height: auto;             
     margin: 0;                   
 
-    margin-top: 25px;
+    margin-top: 15px;
   }
 
   .scene-step.no-media {
@@ -917,7 +920,7 @@ input[type="reset"],
   }
 
   .media-column video {
-    max-width: 65%;
+    max-width: 60%;
     max-height: 35vh;
     object-fit: cover;
     box-shadow: 0 10px 20px rgba(0,0,0,0.2);
@@ -956,17 +959,21 @@ input[type="reset"],
     width: 100%;
     max-width: 100%;
     flex: none;
-    font-size: clamp(18px, 6vw, 21px);
-    line-height: 1.5;
+    font-size: clamp(16px, 4.5vw, 19px);
     text-align: justify;
     padding: 0 10px;
     box-sizing: border-box;
   }
 
+  .text-inner {
+    max-height: 100%;
+    overflow-y: auto;
+    padding-right: 5px; /* небольшой отступ для скролла */
+  }
+
   .scene-buttons {
     position: absolute;
-    bottom: 35px;
-
+    bottom: 30px;
     left: 0;
     right: 0;
     display: flex;
@@ -1008,7 +1015,6 @@ input[type="reset"],
     width: 50px;
   }
 
-
   .credits-content {
     font-size: clamp(20px, 6vw, 26px);
     line-height: 1.6;
@@ -1038,6 +1044,16 @@ input[type="reset"],
   #intro > p {
     font-size: clamp(18px, 3vw, 20px); 
     margin: 0 0 12px 0;
+  }
+
+  .footer-credits {
+    flex-direction: column;
+    gap: 0.2em;
+  }
+  
+  /* Убираем разделители */
+  .footer-credits span:not(:last-child)::after {
+    content: none;
   }
 }
 

@@ -5,7 +5,7 @@ let timeOfDay = 'day';
 const finalPhotoPath = '/media/final/final.jpg'; // Замените на ваш путь к фото
 
 // Звук - исправленная версия
-let masterVolume = 0.2; // ← НАЧАЛЬНАЯ ГРОМКОСТЬ
+let masterVolume = 0.3; // ← НАЧАЛЬНАЯ ГРОМКОСТЬ
 let soundEnabled = true; // ← Изначально включен
 let currentSound = null;
 
@@ -159,7 +159,7 @@ function fadeOut(audio, duration = 800) {
       audio.pause();
       clearInterval(interval);
     }
-  }, 50);
+  }, 100);
 }
 
 // Функции для управления звуком при воспроизведении видео
@@ -197,81 +197,6 @@ function handleVideoPause() {
     }
   }
 }
-
-
-// function playSound(name) {
-//   console.log('playSound вызван с аргументом:', name);
-  
-//   const nextSound = sounds[name];
-//   if (!nextSound) {
-//     console.error('Звук не найден:', name);
-//     return;
-//   }
-
-//   // Если это тот же самый звук, ничего не делаем
-//   if (currentSound === nextSound) {
-//     console.log('Этот звук уже играет');
-//     return;
-//   }
-
-//   // Останавливаем ВСЕ звуки перед воспроизведением нового
-//   Object.values(sounds).forEach(sound => {
-//     if (sound !== nextSound) {
-//       // Плавно выключаем и полностью останавливаем
-//       sound.pause();
-//       sound.currentTime = 0;
-//       sound.volume = 0;
-//     }
-//   });
-
-//   // Если был текущий звук, плавно его выключаем
-//    if (currentSound && currentSound !== nextSound) {
-//     console.log('Плавно выключаем предыдущий звук');
-    
-//     // Создаем копию текущего звука для плавного выключения
-//     const prevSound = currentSound;
-//     const prevVolume = prevSound.volume;
-    
-//     // Плавно уменьшаем громкость текущего звука
-//     const fadeOutInterval = setInterval(() => {
-//       prevSound.volume = Math.max(0, prevSound.volume - (prevVolume / 20));
-//       if (prevSound.volume <= 0.01) {
-//         clearInterval(fadeOutInterval);
-//         prevSound.pause();
-//         prevSound.currentTime = 0;
-//         prevSound.volume = 0;
-//       }
-//     }, 50);
-//   }
-
-//   // Плавно включаем новый звук
-//   currentSound = nextSound;
-  
-//    if (soundEnabled) {
-//     console.log('Плавно включаем новый звук:', name);
-    
-//     // Сбрасываем время и громкость
-//     currentSound.currentTime = 0;
-//     currentSound.volume = 0;
-    
-//     // Начинаем воспроизведение
-//     currentSound.play().catch(error => {
-//       console.log('Ошибка воспроизведения:', error);
-//     });
-    
-//     // Плавное увеличение громкости (немного медленнее)
-//     const fadeInInterval = setInterval(() => {
-//       currentSound.volume = Math.min(masterVolume, currentSound.volume + (masterVolume / 20));
-//       if (currentSound.volume >= masterVolume - 0.01) {
-//         clearInterval(fadeInInterval);
-//         currentSound.volume = masterVolume;
-//       }
-//     }, 50);
-//   } else {
-//     console.log('Звук отключен, не включаем');
-//     currentSound.volume = 0;
-//   }
-// }
 
 
 function playSound(name) {
@@ -356,21 +281,6 @@ function playSound(name) {
   }
 }
 
-// // Обработчик громкости
-// volumeSlider.addEventListener('input', () => {
-//   masterVolume = parseFloat(volumeSlider.value);
-
-//   Object.values(sounds).forEach(sound => {
-//     sound.volume = masterVolume;
-//   });
-
-//   // Обновляем класс muted
-//   if (!soundEnabled || masterVolume === 0) {
-//     soundToggleBtn.classList.add('muted');
-//   } else {
-//     soundToggleBtn.classList.remove('muted');
-//   }
-// });
 
 
 // Обработчик громкости
@@ -403,50 +313,6 @@ document.addEventListener('visibilitychange', () => {
     }
   }
 });
-
-// Обработчик кнопки звука
-// soundToggleBtn.addEventListener('click', () => {
-//   soundEnabled = !soundEnabled;
-
-//   if (soundEnabled) {
-//     // При включении звука проверяем громкость
-//     if (masterVolume === 0) {
-//       soundToggleBtn.classList.add('muted');
-//     } else {
-//       soundToggleBtn.classList.remove('muted');
-//     }
-//     if (currentSound) {
-//       fadeIn(currentSound, masterVolume);
-//     }
-//   } else {
-//     soundToggleBtn.classList.add('muted');
-//     if (currentSound) {
-//       fadeOut(currentSound);
-//     }
-//   }
-// });
-
-// soundToggleBtn.addEventListener('click', () => {
-//   soundEnabled = !soundEnabled;
-
-//   if (soundEnabled) {
-//     soundToggleBtn.classList.remove('muted');
-//     if (currentSound) {
-//       // Если звук уже воспроизводится, но muted? Просто убедимся
-//       if (currentSound.paused) {
-//         currentSound.play().catch(e => console.log('Play failed:', e));
-//       }
-//       fadeIn(currentSound, masterVolume);
-//     } else {
-//       // Если currentSound нет, может быть, стоит создать?
-//     }
-//   } else {
-//     soundToggleBtn.classList.add('muted');
-//     if (currentSound) {
-//       fadeOut(currentSound);
-//     }
-//   }
-// });
 
 
 // Обработчик кнопки звука
@@ -826,7 +692,7 @@ const firstHikeSteps = [
     ]
   },
   {
-    text: "Нам предостоял нелегкий маршрут. Целых два дня перед походом шел снег. Тропа не была протопатна. На верхушке снежного наста виднелись только следы от лыж.",
+    text: "Нам предстоял нелегкий маршрут. Целых два дня перед походом шел снег. Тропа не была протоптана. На толстом слое снега виднелись только следы от лыж.",
     media: [
       { type: "image", src: "media/first/1.jpg" }
     ]
@@ -875,56 +741,6 @@ firstNextBtn.addEventListener('click', () => {
   firstHikeIndex++;
   playFirstHikeStep();
 });
-
-// function playFirstHikeStep() {
-//   console.log('playFirstHikeStep вызван, индекс:', firstHikeIndex); // Для отладки
-
-//   firstNextBtn.hidden = true;
-
-//   if (firstHikeIndex < firstHikeSteps.length) {
-//     const step = firstHikeSteps[firstHikeIndex];
-
-//     console.log('Шаг для отображения:', step); // Для отладки
-
-//     const textContainer = renderSceneStep(firstContainer, step);
-
-
-//     // GSAP анимация текста
-//     const mediaItems = firstContainer.querySelectorAll(
-//       '.media-column img, .media-column video'
-//     );
-
-//     if (mediaItems.length) {
-//       gsap.fromTo(
-//         mediaItems,
-//         {
-//           opacity: 0,
-//           scale: 0.96
-//         },
-//         {
-//           opacity: 1,
-//           scale: 1,
-//           duration: 0.8,
-//           ease: 'power3.out',
-//           stagger: mediaItems.length > 1 ? 0.15 : 0
-//         }
-//       );
-//     }
-    
-//     // Печать текста
-//     typeText(textContainer, step.text, () => {
-//       if (step.isLast) {
-//         firstNextBtn.hidden = true;
-//         finishFirstHikeBtn.hidden = false;
-//       } else {
-//         firstNextBtn.hidden = false;
-//       }
-//     });
-
-//   } else {
-//     finishFirstHikeBtn.hidden = false;
-//   }
-// }
 
 function playFirstHikeStep() {
   console.log('playFirstHikeStep вызван, индекс:', firstHikeIndex);
@@ -1019,7 +835,7 @@ const secondHikeSteps = [
     
   },
   {
-    text: "Когда мы решили уже уходить, то поняли, что у нас осталась бутылка с розжигом и ее надо утилизировать. ",
+    text: "Когда мы решили уже уходить, то поняли, что у нас осталась бутылка с розжигом и ее надо утилизировать.",
     media: [
       { type: "video", src: "media/second/burn_second.mov", poster: "media/second/burn_second_poster.jpg" }
     ]
@@ -1114,20 +930,48 @@ const participants = [
   "Артем (Артем)"
 ];
 
+// function renderCredits() {
+//   const container = document.getElementById('credits-content');
+//   container.innerHTML = "";
+
+//   const title = document.createElement('h2')
+//   title.textContent = "Вся братва с тринашки молодец. Мы захватили свинарник!";
+//   container.appendChild(title);
+
+//   // Добавляем пробел после заголовка
+//   const spacerAfterTitle = document.createElement('div');
+//   spacerAfterTitle.className = 'spacer';
+//   container.appendChild(spacerAfterTitle);
+
+//   participants.forEach( name => {
+//     const p = document.createElement('p');
+//     p.textContent = name;
+//     container.appendChild(p);
+//   });
+
+//   const spacer = document.createElement('div');
+//   spacer.className = 'spacer';
+//   container.appendChild(spacer);
+
+//   const footer = document.createElement('p');
+//   footer.textContent = "Тринашка • Лес • Свинарник";
+//   container.appendChild(footer);
+
+// }
+
 function renderCredits() {
   const container = document.getElementById('credits-content');
   container.innerHTML = "";
 
-  const title = document.createElement('h2')
+  const title = document.createElement('h2');
   title.textContent = "Вся братва с тринашки молодец. Мы захватили свинарник!";
   container.appendChild(title);
 
-  // Добавляем пробел после заголовка
   const spacerAfterTitle = document.createElement('div');
   spacerAfterTitle.className = 'spacer';
   container.appendChild(spacerAfterTitle);
 
-  participants.forEach( name => {
+  participants.forEach(name => {
     const p = document.createElement('p');
     p.textContent = name;
     container.appendChild(p);
@@ -1137,10 +981,18 @@ function renderCredits() {
   spacer.className = 'spacer';
   container.appendChild(spacer);
 
-  const footer = document.createElement('p');
-  footer.textContent = "Тринашка • Лес • Свинарник";
+  // Создаём футер как контейнер с тремя частями
+  const footer = document.createElement('div');
+  footer.className = 'footer-credits';
+  
+  const lines = ["Тринашка", "Лес", "Свинарник"];
+  lines.forEach(line => {
+    const span = document.createElement('span');
+    span.textContent = line;
+    footer.appendChild(span);
+  });
+  
   container.appendChild(footer);
-
 }
 
 function restartCredits() {
