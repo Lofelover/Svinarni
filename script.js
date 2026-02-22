@@ -449,7 +449,7 @@ const introSteps = [
   {
     text: "Свинарник — это не просто пруд. Теперь для тринашки это особое место. ",
     media: [
-      { type: "image", src: "/media/intro/map.png" }
+      { type: "image", src: "/media/intro/map.jpg" }
     ]
   },
   {
@@ -579,11 +579,11 @@ const firstHikeSteps = [
   {
     text: "Первый отдых мы устроили у Глинки - это тоже небольшой пруд, мы часто плавали в нем. Дальше Чипик решил покататься на дереве. Пого и Илью это очень позабавило!",
     media: [
-      { type: "video", src: "media/first/1.mp4", poster: "media/first/1_poster.png"}
+      { type: "video", src: "media/first/1.mp4", poster: "media/first/1_poster.jpg"}
     ]
   },
   {
-    text: "А этот кадр был сделан в относительной близости к заветному месту, когда Илюха забрался на упавшие деревья.",
+    text: "А этот кадр был сделан в относительной близости к заветному месту, когда Илья забрался на упавшие деревья.",
     media: [
       { type: "image", src: "media/first/2.jpg"}
     ]
@@ -603,7 +603,7 @@ const firstHikeSteps = [
   {
     text: "Мы поняли, что должны вернуться в это место ночью и развести огонь. Для этого мы созвали всю тринашку. Поставленная задача будет выполнена!",
     media: [
-      { type: "video", src: "media/first/circle_tg.mp4", circle: true, caption: "Нажми на кружок, чтобы просмотреть его", poster: "media/first/circle_tg_poster.png"}
+      { type: "video", src: "media/first/circle_tg.mp4", circle: true, caption: "Нажми на кружок, чтобы просмотреть его", poster: "media/first/circle_tg_poster.jpg"}
     ],
     isLast: true
   }
@@ -700,7 +700,7 @@ const secondHikeSteps = [
   {
     text: "Мы общались, пили жидкий хлеб, ели свиные ушки ^_^ и наслаждались этим приятным моментом! ",
     media: [
-      { type: "video", src: "media/second/1_second.mov", poster: "media/second/1_second_poster.png" }
+      { type: "video", src: "media/second/1_second.mov", poster: "media/second/1_second_poster.jpg" }
     ]
   },
   {
@@ -720,7 +720,7 @@ const secondHikeSteps = [
   {
     text: "Когда мы решили уже уходить, то поняли, что у нас осталась бутылка с розжигом и ее надо утилизировать. ",
     media: [
-      { type: "video", src: "media/second/burn_second.mov", poster: "media/second/burn_second_poster.png" }
+      { type: "video", src: "media/second/burn_second.mov", poster: "media/second/burn_second_poster.jpg" }
     ]
   },
    {
