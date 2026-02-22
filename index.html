@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet"> -->
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +16,9 @@
     <div id="particles"></div>
     <div id="sound-control" class="sound-control">
         <button id="sound-toggle" aria-label="Звук">
-            🔇
+            <svg class="sound-icon" width="24" height="24" viewBox="0 0 295 295" xmlns="http://www.w3.org/2000/svg">
+                <path d="M65.5,295h-50c-8.284,0-15-6.716-15-15s6.716-15,15-15h50c8.284,0,15,6.716,15,15S73.784,295,65.5,295z M80.5,236 c0-8.284-6.716-15-15-15h-50c-8.284,0-15,6.716-15,15s6.716,15,15,15h50C73.784,251,80.5,244.284,80.5,236z M80.5,192 c0-8.284-6.716-15-15-15h-50c-8.284,0-15,6.716-15,15s6.716,15,15,15h50C73.784,207,80.5,200.284,80.5,192z M80.5,148 c0-8.284-6.716-15-15-15h-50c-8.284,0-15,6.716-15,15s6.716,15,15,15h50C73.784,163,80.5,156.284,80.5,148z M80.5,104 c0-8.284-6.716-15-15-15h-50c-8.284,0-15,6.716-15,15s6.716,15,15,15h50C73.784,119,80.5,112.284,80.5,104z M187.5,280 c0-8.284-6.716-15-15-15h-50c-8.284,0-15,6.716-15,15s6.716,15,15,15h50C180.784,295,187.5,288.284,187.5,280z M187.5,236 c0-8.284-6.716-15-15-15h-50c-8.284,0-15,6.716-15,15s6.716,15,15,15h50C180.784,251,187.5,244.284,187.5,236z M187.5,192 c0-8.284-6.716-15-15-15h-50c-8.284,0-15,6.716-15,15s6.716,15,15,15h50C180.784,207,187.5,200.284,187.5,192z M294.5,280 c0-8.284-6.716-15-15-15h-50c-8.284,0-15,6.716-15,15s6.716,15,15,15h50C287.784,295,294.5,288.284,294.5,280z M294.5,236 c0-8.284-6.716-15-15-15h-50c-8.284,0-15,6.716-15,15s6.716,15,15,15h50C287.784,251,294.5,244.284,294.5,236z M294.5,192 c0-8.284-6.716-15-15-15h-50c-8.284,0-15,6.716-15,15s6.716,15,15,15h50C287.784,207,294.5,200.284,294.5,192z M294.5,148 c0-8.284-6.716-15-15-15h-50c-8.284,0-15,6.716-15,15s6.716,15,15,15h50C287.784,163,294.5,156.284,294.5,148z M294.5,104 c0-8.284-6.716-15-15-15h-50c-8.284,0-15,6.716-15,15s6.716,15,15,15h50C287.784,119,294.5,112.284,294.5,104z M294.5,59 c0-8.284-6.716-15-15-15h-50c-8.284,0-15,6.716-15,15s6.716,15,15,15h50C287.784,74,294.5,67.284,294.5,59z M294.5,15 c0-8.284-6.716-15-15-15h-50c-8.284,0-15,6.716-15,15s6.716,15,15,15h50C287.784,30,294.5,23.284,294.5,15z" fill="currentColor"/>
+            </svg>
         </button>
         <input
             id="sound-volume"
@@ -26,43 +34,57 @@
         <section id="intro" class="scene active">
             <h2>Вступление</h2>
             <p>Что такое свинарник?</p>
-
-            <img src="/media/beginning/13.jpg" alt="Свинарник" class="intro-logo"/>
-            <div class="scene-content"></div>
-
-            <button id="intro-start">Начать рассказ</button>
-            <button id="intro-finish" hidden>Далее</button>
+            
+            <div class="scene-content-container">
+                <img src="/media/beginning/13.jpg" alt="Свинарник" class="intro-logo"/>
+                <div class="scene-content"></div>
+            </div>
+            
+            <div class="scene-buttons">
+                <button id="intro-start">Начать рассказ</button>
+                <button id="intro-finish" hidden>Далее</button>
+            </div>
         </section>
 
         <section id="first-hike" class="scene">
             <h2>Первый поход...</h2>
             <p>Поход начался с протаптывания дороги</p>
-
-            <div class="scene-content"></div>
-
-            <button id="first-next">Далее</button>
-            <button id="to-evening" hidden>Перейти ко второму походу</button>
+            
+            <div class="scene-content-container">
+                <div class="scene-content"></div>
+            </div>
+            
+            <div class="scene-buttons">
+                <button id="first-next">Далее</button>
+                <button id="to-evening" hidden>Перейти ко второму походу</button>
+            </div>
         </section>
         
         <section id="second-hike" class="scene">
             <h2>Вторая ходка...</h2>
             <p>Мы готовы зажечь огонь на этом месте</p>
-
-            <div class="scene-content"></div>
-            <button id="second-next">Далее</button>
-            <button id="finish" hidden>Подвести итоги</button>
+            
+            <div class="scene-content-container">
+                <div class="scene-content"></div>
+            </div>
+            
+            <div class="scene-buttons">
+                <button id="second-next">Далее</button>
+                <button id="finish" hidden>Подвести итоги</button>
+            </div>
         </section>
 
         <section id="final" class="scene">
-            <!-- <img src="/media/photo_2025-11-25_05-29-50.jpg" alt="Cat 13"> -->
-            <div class="credits">
-                <div class="credits-content" id="credits-content">
-                    
+            <div class="scene-content-container">
+                <div class="credits">
+                    <div class="credits-content" id="credits-content">
+                        
+                    </div>
+                </div>
+                <div id="final-photo-container" class="final-photo-container" style="display: none;">
+                    <img id="final-photo" src="" alt="Финальное фото">
                 </div>
             </div>
-            <div id="final-photo-container" class="final-photo-container" style="display: none;">
-                <img id="final-photo" src="" alt="Финальное фото">
-             </div>
         </section>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>

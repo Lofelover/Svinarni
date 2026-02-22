@@ -1,9 +1,3 @@
-// Отладка
-// В самом верху файла добавьте
-// console.log('=== СКРИПТ ЗАГРУЖЕН ===');
-// console.log('Доступные звуки:', Object.keys(sounds));
-// console.log('GSAP доступен:', typeof gsap !== 'undefined');
-
 // Изначальное состояние первой сцены
 let timeOfDay = 'day';
 
@@ -11,7 +5,7 @@ let timeOfDay = 'day';
 const finalPhotoPath = '/media/final/final.jpg'; // Замените на ваш путь к фото
 
 // Звук - исправленная версия
-let masterVolume = 0.1; // ← НАЧАЛЬНАЯ ГРОМКОСТЬ
+let masterVolume = 0.2; // ← НАЧАЛЬНАЯ ГРОМКОСТЬ
 let soundEnabled = true; // ← Изначально включен
 let currentSound = null;
 
@@ -45,7 +39,9 @@ const volumeSlider = document.getElementById('sound-volume');
 
 // Начальное состояние
 volumeSlider.value = masterVolume;
-soundToggleBtn.textContent = '🔊'; // Изначально включен!
+// soundToggleBtn.textContent = '🔊'; // Изначально включен!
+// Убеждаемся, что класс muted отсутствует (звук включён и громкость > 0)
+soundToggleBtn.classList.remove('muted');
 
 // Функция плавного изменения громкости
 function fadeIn(audio, target = 0.6, duration = 800) {
@@ -187,50 +183,78 @@ function playSound(name) {
   }
 }
 
-// Обработчик переключения звука
+// Обработчик громкости
+volumeSlider.addEventListener('input', () => {
+  masterVolume = parseFloat(volumeSlider.value);
+
+  Object.values(sounds).forEach(sound => {
+    sound.volume = masterVolume;
+  });
+
+  // Обновляем класс muted
+  if (!soundEnabled || masterVolume === 0) {
+    soundToggleBtn.classList.add('muted');
+  } else {
+    soundToggleBtn.classList.remove('muted');
+  }
+});
+
+// Обработчик кнопки звука
+// soundToggleBtn.addEventListener('click', () => {
+//   soundEnabled = !soundEnabled;
+
+//   if (soundEnabled) {
+//     // При включении звука проверяем громкость
+//     if (masterVolume === 0) {
+//       soundToggleBtn.classList.add('muted');
+//     } else {
+//       soundToggleBtn.classList.remove('muted');
+//     }
+//     if (currentSound) {
+//       fadeIn(currentSound, masterVolume);
+//     }
+//   } else {
+//     soundToggleBtn.classList.add('muted');
+//     if (currentSound) {
+//       fadeOut(currentSound);
+//     }
+//   }
+// });
+
 soundToggleBtn.addEventListener('click', () => {
   soundEnabled = !soundEnabled;
 
   if (soundEnabled) {
-    soundToggleBtn.textContent = '🔊';
-    // Включаем текущий звук
+    soundToggleBtn.classList.remove('muted');
     if (currentSound) {
+      // Если звук уже воспроизводится, но muted? Просто убедимся
+      if (currentSound.paused) {
+        currentSound.play().catch(e => console.log('Play failed:', e));
+      }
       fadeIn(currentSound, masterVolume);
+    } else {
+      // Если currentSound нет, может быть, стоит создать?
     }
   } else {
-    soundToggleBtn.textContent = '🔇';
-    // Выключаем текущий звук
+    soundToggleBtn.classList.add('muted');
     if (currentSound) {
       fadeOut(currentSound);
     }
   }
 });
 
-
-// Обработчик громкости
-volumeSlider.addEventListener('input', () => {
-  masterVolume = parseFloat(volumeSlider.value);
-
-  // Обновляем громкость всех звуков
-  Object.values(sounds).forEach(sound => {
-    sound.volume = masterVolume;
-  });
-
-  // Обновляем иконку в зависимости от громкости
-  if (masterVolume === 0) {
-    soundToggleBtn.textContent = '🔇';
-  } else {
-    soundToggleBtn.textContent = soundEnabled ? '🔊' : '🔇';
-  }
-});
-
 // Рендер сцены
-
 function renderSceneStep(container, step) {
   container.innerHTML = "";
 
   const stepEl = document.createElement("div");
   stepEl.className = "scene-step";
+  if (step.textCenter) {
+    stepEl.classList.add("text-center");
+  }
+
+  const stepContent = document.createElement("div");
+  stepContent.className = "scene-step-content";
 
   const hasMedia = Array.isArray(step.media) && step.media.length > 0;
 
@@ -254,19 +278,48 @@ function renderSceneStep(container, step) {
       }
 
       if (item.type === "video") {
-        const video = document.createElement("video");
-        video.src = item.src;
-
-        // Для круглого видео не добавляем controls, но добавляем клик
+        // Для круглого видео создаем обертку
         if (item.circle) {
-          video.classList.add('circle-video');
-          // НЕ добавляем video.controls = true
+          const wrapper = document.createElement("div");
+          wrapper.className = "circle-video-wrapper video-paused";
+          
+          const video = document.createElement("video");
+          video.src = item.src;
 
+          if (item.poster) {
+            video.poster = item.poster;   // ← добавляем постер
+          }
+
+          video.classList.add('circle-video');
+          // video.muted = true; // Для обхода политики автовоспроизведения
+          
+          // Обновляем класс обертки при изменении состояния видео
+          video.addEventListener('play', function() {
+            wrapper.classList.remove('video-paused');
+          });
+          
+          video.addEventListener('pause', function() {
+            wrapper.classList.add('video-paused');
+          });
+          
+          video.addEventListener('ended', function() {
+            wrapper.classList.add('video-paused');
+          });
+          
+          // Обновляем состояние при загрузке
+          video.addEventListener('loadeddata', function() {
+            if (video.paused) {
+              wrapper.classList.add('video-paused');
+            } else {
+              wrapper.classList.remove('video-paused');
+            }
+          });
+          
           // Обработчик клика для воспроизведения/паузы
-          video.addEventListener('click', function(e) {
+          wrapper.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-
+            
             if (video.paused) {
               video.play().catch(e => {
                 console.log("Ошибка воспроизведения:", e);
@@ -275,9 +328,9 @@ function renderSceneStep(container, step) {
               video.pause();
             }
           });
-
-          // Также добавляем обработчик клавиши пробел
-          video.addEventListener('keydown', function(e) {
+          
+          // Обработчик клавиши пробел
+          wrapper.addEventListener('keydown', function(e) {
             if (e.code === 'Space') {
               e.preventDefault();
               if (video.paused) {
@@ -287,49 +340,82 @@ function renderSceneStep(container, step) {
               }
             }
           });
-
-          // Делаем видео focusable для клавиатуры
-          video.tabIndex = 0;
-
+          
+          // Делаем обертку focusable для клавиатуры
+          wrapper.tabIndex = 0;
+          
           // Показываем controls только в полноэкранном режиме
-          video.addEventListener('fullscreenchange', function() {
-            if (document.fullscreenElement === video) {
+          document.addEventListener('fullscreenchange', function() {
+            if (document.fullscreenElement === wrapper) {
               video.controls = true;
             } else {
               video.controls = false;
-            }
+            } 
+          });
+          
+          video.addEventListener("dblclick", function(e) {
+            e.stopPropagation();
+            e.preventDefault();
           });
 
-          // Обработчик двойного клика для полноэкранного режима
-          video.addEventListener('dblclick', function() {
-            if (video.requestFullscreen) {
-              if (!document.fullscreenElement) {
-                video.requestFullscreen();
-              } else {
-                document.exitFullscreen();
+          
+          // Стандартные обработчики событий для видео
+          video.addEventListener('play', handleVideoPlay);
+          video.addEventListener('pause', handleVideoPause);
+          video.addEventListener('ended', handleVideoPause);
+          
+          // Обработчик для выхода из полноэкранного режима
+          video.addEventListener('fullscreenchange', function() {
+            if (!document.fullscreenElement) {
+              if (video.paused) {
+                handleVideoPause();
+              }
+            }
+          });
+          
+          wrapper.appendChild(video);
+          mediaCol.appendChild(wrapper);
+
+          if (item.caption) {
+            mediaCol.classList.add('has-caption');
+            const caption = document.createElement('div');
+            caption.className = 'video-caption';
+            caption.textContent = item.caption;
+            mediaCol.appendChild(caption);
+          }
+          
+        } else {
+          // Обычное видео с controls
+          const video = document.createElement("video");
+          video.src = item.src;
+          if (item.poster) {
+            video.poster = item.poster;     // ← добавляем постер
+          }
+          video.controls = true;
+          
+          // Обработчик для выхода из полноэкранного режима
+          video.addEventListener('fullscreenchange', function() {
+            if (document.fullscreenElement === video) {
+              // В полноэкранном режиме — contain
+              video.style.objectFit = 'contain';
+            } else {
+              // При выходе — возвращаем cover (удаляем инлайн-стиль)
+              video.style.objectFit = '';
+            }
+            if (!document.fullscreenElement) {
+              if (video.paused) {
+                handleVideoPause();
               }
             }
           });
 
-        } else {
-          video.controls = true; // Для обычных видео оставляем controls
+          // Стандартные обработчики событий для видео
+          video.addEventListener('play', handleVideoPlay);
+          video.addEventListener('pause', handleVideoPause);
+          video.addEventListener('ended', handleVideoPause);
+          
+          mediaCol.appendChild(video);
         }
-
-        // Стандартные обработчики событий для видео
-        video.addEventListener('play', handleVideoPlay);
-        video.addEventListener('pause', handleVideoPause);
-        video.addEventListener('ended', handleVideoPause);
-
-        // Обработчик для выхода из полноэкранного режима
-        video.addEventListener('fullscreenchange', function() {
-          if (!document.fullscreenElement) {
-            if (video.paused) {
-              handleVideoPause();
-            }
-          }
-        });
-
-        mediaCol.appendChild(video);
       }
     });
 
@@ -339,10 +425,21 @@ function renderSceneStep(container, step) {
   const textCol = document.createElement("div");
   textCol.className = "text-column";
 
-  stepEl.appendChild(textCol);
+  // Создаем контейнер для текстового контента
+  const textContainer = document.createElement("div");
+  textContainer.className = "text-content-container";
+
+  // Создаем контейнер для текста
+  const textInner = document.createElement("div");
+  textInner.className = "text-inner";
+  
+  textContainer.appendChild(textInner);
+  textCol.appendChild(textContainer);
+  stepContent.appendChild(textCol);
+  stepEl.appendChild(stepContent);
   container.appendChild(stepEl);
 
-  return textCol;
+  return textInner; // Возвращаем контейнер для текста
 }
 
 
@@ -350,7 +447,7 @@ function renderSceneStep(container, step) {
 
 const introSteps = [
   {
-    text: "Свинарник — это не просто пруд.",
+    text: "Свинарник — это не просто пруд. Теперь для тринашки это особое место. ",
     media: [
       { type: "image", src: "/media/intro/map.png" }
     ]
@@ -358,14 +455,17 @@ const introSteps = [
   {
     text: "Когда мы были мелкими, то часто летом приходили сюда купаться. Кто-то с друзьями, кто-то с родителями.",
     media: [
-      { type: "image", src: "/media/intro/pool.jpg" },
+      { type: "image", src: "/media/intro/pool.jpg" }
     ]
   },
   {
     text: "Я помню, что первый раз в жизни увидел здесь стрекозу.",
+    media: [
+      { type: "image", src: "media/intro/dragonfly.jpg" }
+    ]
   },
   {
-    text: "Нам(13) было интересно посетить это место зимой, идя по снежному лесу.",
+    text: "Нам(тринашке) было интересно посетить это место зимой, идя по снежному лесу.",
     isLast: true
   }
 ];
@@ -387,7 +487,7 @@ function playIntroStep() {
     introContainer.innerHTML = `
       <div class="scene-step no-media">
         <div class="text-column">
-          <p style="font-size: 36px;">
+          <p>   
             История начинается…
           </p>
         </div>
@@ -401,6 +501,7 @@ function playIntroStep() {
   }
 }
 
+// <p style="font-size: 36px;"></p>
 
 
 let introIndex = 0;
@@ -411,17 +512,20 @@ const startBtn = document.getElementById("intro-start");
 const nextBtn = document.getElementById("intro-finish");
 
 
+
 function typeText(container, text, onFinish) {
   container.innerHTML = "";
-  let i = 0;
-
+  
   const p = document.createElement("p");
+  p.style.cssText = "margin: 0; padding: 0; width: 100%;";
+  
   container.appendChild(p);
-
+  
+  let i = 0;
   const interval = setInterval(() => {
     p.innerHTML += text[i];
     i++;
-
+    
     if (i >= text.length) {
       clearInterval(interval);
       if (onFinish) onFinish();
@@ -461,13 +565,13 @@ nextBtn.addEventListener("click", () => {
 // Первая ходка
 const firstHikeSteps = [
   {
-    text: "Илья, Никита(Чипик) и Никита(Пого) участвовали в первой ходке.",
+    text: "Илья(Марвел), Никита(Чипик) и Никита(Пого) участвовали в первой ходке.",
     media: [
       { type: "image", src: "media/first/chair.jpg" }
     ]
   },
   {
-    text: "Нам предостоял нелегкий маршрут. Целых два дня перед походом шел снег. Тропа не была протопатна. На верхушке снега виднелись только следы от лыж.",
+    text: "Нам предостоял нелегкий маршрут. Целых два дня перед походом шел снег. Тропа не была протопатна. На верхушке снежного наста виднелись только следы от лыж.",
     media: [
       { type: "image", src: "media/first/1.jpg" }
     ]
@@ -475,23 +579,23 @@ const firstHikeSteps = [
   {
     text: "Первый отдых мы устроили у Глинки - это тоже небольшой пруд, мы часто плавали в нем. Дальше Чипик решил покататься на дереве. Пого и Илью это очень позабавило!",
     media: [
-      { type: "video", src: "media/first/1.mp4" }
+      { type: "video", src: "media/first/1.mp4", poster: "media/first/1_poster.png"}
     ]
   },
   {
-    text: "А эти кадры были сделаны в непресредственной близости к заветному месту.",
+    text: "А этот кадр был сделан в относительной близости к заветному месту, когда Илюха забрался на упавшие деревья.",
     media: [
       { type: "image", src: "media/first/2.jpg"}
     ]
   },
   {
-    text: "Наконец-то мы пришли на свинарник. Помню как катался на лыжах по склону, который ведет к пруду.",
+    text: "Наконец-то мы пришли на свинарник. Помню как мы катались в школе на физкультуре на лыжах вниз по этому склону.",
     media: [
       { type: "image", src: "media/first/3.jpg"}
     ]
   },
   {
-    text: "Далее мы пытались развести костер, в ход шло всё: зажигалки, бумага, береста. Однако все наши попытки были тщетны.",
+    text: "Далее мы пытались развести костер, в ход шло всё: зажигалки, бумага, береста. Однако все наши попытки были тщетны. Природа взяла верх над нами.",
     media: [
       { type: "image", src: "media/first/4.jpg"}
     ]
@@ -499,7 +603,7 @@ const firstHikeSteps = [
   {
     text: "Мы поняли, что должны вернуться в это место ночью и развести огонь. Для этого мы созвали всю тринашку. Поставленная задача будет выполнена!",
     media: [
-      { type: "video", src: "media/first/circle_tg.MP4", circle: true}
+      { type: "video", src: "media/first/circle_tg.mp4", circle: true, caption: "Нажми на кружок, чтобы просмотреть его", poster: "media/first/circle_tg_poster.png"}
     ],
     isLast: true
   }
@@ -582,7 +686,7 @@ const secondHikeSteps = [
     text: "Мы собрались на вторую ходку. Более подготовленные и с боевым настроем. КОСТЕР БУДЕТ РАЗВЕДЕН!",
   },
   {
-    text: "Прямо перед полянкой нас встретил Хранитель Свинарника. Мы дали ему дань(винстон икстайл), после чего он пропустил нас к нужному месту.",
+    text: "Прямо перед полянкой нас встретил Хранитель Свинарника. Мы предподнесли ему дань(винстон икстайл), после чего он пропустил нас к нужному месту.",
     media: [
       { type: "image", src: "media/second/keeper_second.jpg" }
     ]
@@ -594,19 +698,20 @@ const secondHikeSteps = [
     ]
   },
   {
-    text: "Мы общались, пили жидкий хлеб и наслаждались этим приятным моментом! ",
+    text: "Мы общались, пили жидкий хлеб, ели свиные ушки ^_^ и наслаждались этим приятным моментом! ",
     media: [
-      { type: "video", src: "media/second/1_second.mov" }
+      { type: "video", src: "media/second/1_second.mov", poster: "media/second/1_second_poster.png" }
     ]
   },
   {
     text: "Чипик",
     media: [
       { type: "image", src: "media/second/chipik_second.jpg"}
-    ]
+    ],
+    textCenter: true
   },
   {
-    text: "Так наше уютное место выглядело издалека. Это Тема и Курсед едят сосиски, которые стоят по 40р за упаковку",
+    text: "Так наше уютное место выглядело издалека. Там Тема и Курсед едят сосиски, которые стоят по 40р за упаковку. Потом их ели все(",
     media: [
       { type: "image", src: "media/second/eat_second.jpg" }
     ]
@@ -615,7 +720,7 @@ const secondHikeSteps = [
   {
     text: "Когда мы решили уже уходить, то поняли, что у нас осталась бутылка с розжигом и ее надо утилизировать. ",
     media: [
-      { type: "video", src: "media/second/burn_second.MOV" }
+      { type: "video", src: "media/second/burn_second.MOV", poster: "media/second/burn_second_poster.png" }
     ]
   },
    {
@@ -671,7 +776,6 @@ function playSecondHikeStep() {
     // Печать текста
     typeText(textContainer, step.text, () => {
        if (step.isLast) {
-        // Скрываем кнопку "Далее" и показываем "Подвести итоги"
         secondNextBtn.hidden = true;
         finishSecondHikeBtn.hidden = false;
       } else {
@@ -685,13 +789,6 @@ function playSecondHikeStep() {
 }
 
 finishSecondHikeBtn.addEventListener('click', () => {
-
-  // showScene('final');
-  // setTime('night');
-
-  // renderCredits();
-  // restartCredits();
-  // hideCreditsAfterAnimation();
 
   scenes.forEach(scene => scene.classList.remove('active'));
   const finalScene = document.getElementById('final');
@@ -726,7 +823,12 @@ function renderCredits() {
 
   const title = document.createElement('h2')
   title.textContent = "Вся братва с тринашки молодец. Мы захватили свинарник!";
-  container.appendChild(title)
+  container.appendChild(title);
+
+  // Добавляем пробел после заголовка
+  const spacerAfterTitle = document.createElement('div');
+  spacerAfterTitle.className = 'spacer';
+  container.appendChild(spacerAfterTitle);
 
   participants.forEach( name => {
     const p = document.createElement('p');
@@ -751,40 +853,6 @@ function restartCredits() {
   credits.offsetHeight;
   credits.style.animation = '';
 }
-
-function hideCreditsAfterAnimation() {
-  const credits = document.querySelector('.credits-content');
-
-  credits.addEventListener('animationend', () => {
-    credits.style.display = 'none';
-  }, { once: true });
-}
-
-
-// Фото после финала
-// function hideCreditsAfterAnimation() {
-//   const credits = document.querySelector('.credits-content');
-//   const finalPhotoContainer = document.getElementById('final-photo-container');
-//   const finalPhoto = document.getElementById('final-photo');
-
-//   // Загружаем финальное фото
-//   finalPhoto.src = finalPhotoPath;
-
-//   credits.addEventListener('animationend', () => {
-//     // Скрываем титры
-//     credits.style.display = 'none';
-    
-//     // Показываем контейнер для фото
-//     finalPhotoContainer.style.display = 'flex';
-    
-//     // Запускаем анимацию появления
-//     setTimeout(() => {
-//       finalPhotoContainer.classList.add('show');
-//     }, 300);
-    
-//   }, { once: true });
-// }
-
 
 function hideCreditsAfterAnimation() {
   const credits = document.querySelector('.credits-content');
@@ -897,28 +965,32 @@ function showScene(id) {
   const nextScene = document.getElementById(id);
   nextScene.classList.add('active');
 
-    // Воспроизводим звук для текущей сцены
+  // Воспроизводим звук для текущей сцены
   const soundToPlay = sceneToSoundMap[id];
   if (soundToPlay) {
     playSound(soundToPlay);
   }
 
   if (id === 'first-hike') {
-      setTime('day');
-      firstHikeIndex = 0;
-      firstContainer.innerHTML = "";
-      finishFirstHikeBtn.hidden = true;
-      firstNextBtn.hidden = false;
-      playFirstHikeStep();
+    setTime('day');
+    firstHikeIndex = 0;
+    firstContainer.innerHTML = "";
+    const toEveningBtn = document.getElementById('to-evening');
+    const firstNextBtn = document.getElementById('first-next');
+    if (toEveningBtn) toEveningBtn.hidden = true;
+    if (firstNextBtn) firstNextBtn.hidden = false;
+    playFirstHikeStep();
   }
 
   if (id === 'second-hike') {
-      setTime('night');
-      secondHikeIndex = 0;
-      secondContainer.innerHTML = "";
-      finishSecondHikeBtn.hidden = true;
-      secondNextBtn.hidden = false;
-      playSecondHikeStep();
+    setTime('night');
+    secondHikeIndex = 0;
+    secondContainer.innerHTML = "";
+    const finishBtn = document.getElementById('finish');
+    const secondNextBtn = document.getElementById('second-next');
+    if (finishBtn) finishBtn.hidden = true;
+    if (secondNextBtn) secondNextBtn.hidden = false;
+    playSecondHikeStep();
   }
 }
 
@@ -948,7 +1020,6 @@ function disableParticles() {
 }
 
 // Эффект глаз костра
-
 function enableNightParticles() {
   tsParticles.load("particles", {
     particles: {
@@ -990,4 +1061,15 @@ function enableNightParticles() {
 }
 
 
+// Определение мобильного устройства (сенсорный экран)
+function isTouchDevice() {
+  return (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+}
 
+// Если устройство сенсорное – скрываем ползунок громкости
+if (isTouchDevice()) {
+  const volumeSlider = document.getElementById('sound-volume');
+  if (volumeSlider) {
+    volumeSlider.style.display = 'none';
+  }
+}

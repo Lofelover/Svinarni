@@ -3,20 +3,27 @@
   --text-color: #111111;
 }
 
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 html,
 body {
   height: 100%;
   overflow-y: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
   transition: background-color 0.6s ease, color 0.6s ease;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  /* font-family: -apple-system, 'Inter', BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; */
+  font-family: 'Playfair Display', Georgia, serif;
+  /* font-family: 'Space Grotesk', Georgia, serif; */
+  /* font-family: 'Bebas Neue', sans-serif; */
+  /* letter-spacing: 2px; */
+  /* text-transform: uppercase; */
+  /* line-height: 1.4; */
 }
 
 body[data-time="day"] {
@@ -29,207 +36,150 @@ body[data-time="night"] {
   --text-color: #eeeeee;
 }
 
+/* Основная структура сцены */
 .scene {
   display: none;
   position: relative;
-  z-index: 1;
   height: 100vh;
   overflow: hidden;
-  padding: 40px;
+  padding: 40px 40px 80px 40px; /* Увеличиваем нижний padding для кнопок */
   box-sizing: border-box;
-  text-align: center; /* ЭТО НОВОЕ - центрируем все текстовые элементы */
+  text-align: center;
 }
 
+.scene.active {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+}
+
+/* Заголовок и подзаголовок */
 .scene > h2 {
-  font-size: 42px;
-  margin: 20px 0 10px 0;
+  font-size: clamp(35px, 6vw, 46px);
+  margin: 10px 0 5px 0;
   font-weight: 700;
   text-align: center;
   letter-spacing: 0.5px;
+  flex-shrink: 0; /* Не сжимается */
 }
 
 .scene > p {
-  font-size: 24px;
-  margin: 0 0 30px 0;
+  font-size: clamp(18px, 3vw, 24px);
+  margin: 0 0 20px 0;
   text-align: center;
   opacity: 0.8;
   font-weight: 400;
   line-height: 1.4;
+  flex-shrink: 0; /* Не сжимается */
 }
 
+/* Основной контейнер для контента - теперь занимает все свободное пространство */
+.scene-content-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1; /* Занимает всё доступное пространство  */
+  min-height: 0; /* Важно для flex */
+  overflow: hidden;
+}
+
+/* Контейнер для медиа и текста */
 .scene-content {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 60vh;
-  /* height: 100%; */
-  /* margin: 40px 0; */
-
+  flex-grow: 1;
+  min-height: 0;
 }
 
-.scene > button {
-  margin: 20px auto; /* Центрируем по горизонтали */
-  font-family: 'Inter', sans-serif; /* Новый шрифт */
-  font-weight: 500; /* Средняя жирность */
-}
-
-.scene.active {
-  display: block;
-}
-
-/* Звук */
-
-/* ===== Управление звуком ===== */
-
-.sound-control {
-  position: fixed;
-  top: 24px;
-  right: 24px;
-  z-index: 100;
-
+/* Кнопки - всегда внизу */
+.scene-buttons {
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  right: 0;
   display: flex;
-  align-items: center;
-  gap: 10px;
-
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-
-  padding: 10px 14px;
-  border-radius: 999px;
-
-  box-shadow:
-    0 6px 18px rgba(0, 0, 0, 0.18);
-}
-
-body[data-time="night"] .sound-control {
-  background: rgba(30, 30, 35, 0.85);
-}
-
-/* Кнопка mute */
-#sound-toggle {
-  width: 36px;
-  height: 36px;
-
-  border-radius: 50%;
-  padding: 0;
-
-  display: flex;
-  align-items: center;
   justify-content: center;
-
-  font-size: 18px;
+  gap: 20px;
+  z-index: 10;
 }
 
-/* Ползунок громкости */
-#sound-volume {
-  width: 80px;
-  cursor: pointer;
+/* Особые стили для начальной сцены */
+#intro .scene-content-container {
+  position: relative;
 }
 
-
-
-/* Начало */
-
-.intro-logo {
-  display: block;
-  margin: 120px auto 30px auto;
-
-  max-width: 300px;
-  width: 100%;
+#intro .intro-logo {
+  max-width: min(400px, 40vw);
+  max-height: min(440px, 45vh);
+  width: auto;
+  height: auto;
   border-radius: 15%;
   opacity: 0.9;
-
-  transition:
-    opacity 0.4s ease,
-    transform 0.4s ease;
-}
-
-.intro-logo {
   filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.25));
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-#intro .scene-content {
-  display: none;
-}
-
+/* Когда начальная сцена активирована (начат рассказ) */
 #intro.started .intro-logo {
   display: none;
 }
+
 #intro.started .scene-content {
   display: flex;
 }
 
-#intro {
-  position: relative;
+/* Скрываем контент в начальной сцене до начала рассказа */
+#intro:not(.started) .scene-content {
+  display: none;
 }
-
-/* Кнопка "Начать рассказ" */
-#intro-start {
-  position: absolute;
-  bottom: 120px; /* ← подбери под себя */
-  left: 50%;
-  transform: translateX(-50%);
-}
-
 
 /* Кнопка */
 button {
+  font-family: 'Playfair Display', Georgia, serif;
   appearance: none;
   border: none;
   outline: none;
-
-  padding: 14px 28px;
+  padding: clamp(12px, 2vw, 14px) clamp(24px, 3vw, 28px);
   border-radius: 999px;
-
-  font-size: 17px;
+  font-size: clamp(16px, 2vw, 18px);
   font-weight: 500;
   letter-spacing: 0.3px;
-
   background: rgba(255, 255, 255, 0.85);
   color: #111;
-
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.12),
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12),
     inset 0 -1px 0 rgba(255, 255, 255, 0.6);
-
   cursor: pointer;
-  transition:
-    transform 0.2s ease,
+  transition: transform 0.2s ease,
     box-shadow 0.2s ease,
     background-color 0.3s ease,
     opacity 0.3s ease;
+  flex-shrink: 0;
 }
 
 button:hover {
   transform: translateY(-1px);
-  box-shadow:
-    0 6px 18px rgba(0, 0, 0, 0.18),
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18),
     inset 0 -1px 0 rgba(255, 255, 255, 0.7);
 }
 
 button:active {
   transform: translateY(0);
-  box-shadow:
-    0 3px 8px rgba(0, 0, 0, 0.15),
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15),
     inset 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 body[data-time="night"] button {
   background: rgba(30, 30, 35, 0.85);
   color: #f0f0f0;
-
-  box-shadow:
-    0 6px 18px rgba(0, 0, 0, 0.5),
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5),
     inset 0 -1px 0 rgba(255, 255, 255, 0.08);
 }
 
-
 /* Эффекты */
-
 main {
   position: relative;
   z-index: 1;
@@ -244,25 +194,18 @@ main {
   transition: opacity 1s ease;
 }
 
-
 /* Видео, фото, текст в сцене */
-
 .scene-step {
-  /* display: grid; */
   display: flex;
   justify-content: center;
   align-items: center;
-  grid-template-columns: 1fr 1.2fr;
-  gap: 150px;
-  align-items: center;
-  height: 100%;
-  max-height: 70vh;
-  align-items: center;
+  gap: clamp(50px, 8vw, 150px);
   width: 100%;
-  max-width: 1800px;
-  margin-top: 50px;
+  max-width: 1800px; /* ← ДОБАВИТЬ ЭТО */
+  /* margin: 50px auto 0 auto; */
+  height: 100%; /* ← ДОБАВИТЬ ЭТО */
+  max-height: 70vh; /* ← ДОБАВИТЬ ЭТО */
 }
-
 
 
 .scene-step.no-media {
@@ -275,15 +218,25 @@ main {
   max-width: 900px;
   text-align: center;
   padding: 0;
-  margin: 90px;
+  width: auto;
+  margin: 0 auto;
 }
 
+/* Контейнер для медиа */
+
+.media-column {
+  position: relative;
+  flex-shrink: 0;
+  width: 420px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+}
 
 .media-column img {
-  width: 100%;
-  max-width: 420px;
-
-  max-height: 50vh;
+  max-width: min(500px, 50vw);
+  max-height: 55vh;
   object-fit: cover;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
   border-radius: 12px;
@@ -291,138 +244,134 @@ main {
 
 .media-column video {
   width: 100%;
-  max-width: 420px;
-  max-height: 50vh;
-  object-fit: cover; /* Возвращаем cover для обычного режима */
+  max-width: 380px;
+  max-height: 55vh;
+  object-fit: cover;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
   border-radius: 12px;
-  background-color: #000; /* Оставляем черный фон на случай, если видео не заполняет полностью */
+  background-color: #000;
 }
 
-.media-column img:only-child {
-  max-width: 420px;
-  max-height: 55vh;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
-}
-
-.media-column video:only-child {
-  max-width: 420px;
-  max-height: 55vh;
-  object-fit: cover; /* Измените с cover на contain */
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
-}
-
-.media-column.two-media {
-  width: 650px;              /* ← ВАЖНО */
-  justify-content: center;
-  gap: 32px;
-}
-
-
-.media-column.two-media img {
-  max-width: 400px;          /* ← каждое становится заметно больше */
-  max-height: 50vh;
-}
-
-.media-column.two-media video {
-  max-width: 400px;
-  max-height: 50vh;
-  object-fit: cover; /* Измените с cover на contain */
-}
-
+video:fullscreen,
 video:-webkit-full-screen {
   object-fit: contain !important;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: none !important;
-  max-height: none !important;
-  border-radius: 0 !important;
-  background-color: #000 !important;
 }
-
-
-video:fullscreen {
-  object-fit: contain !important;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: none !important;
-  max-height: none !important;
-  border-radius: 0 !important;
-  background-color: #000 !important;
-}
-
-/* Добавьте стили для предотвращения масштабирования на мобильных устройствах */
-video {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
-* Плавный переход для видео */
-.media-column video {
-  transition: all 0.3s ease;
-}
-
-/* Стили для предотвращения масштабирования на мобильных устройствах */
-video {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
-.media-column {
-  width: 420px;
-  flex-shrink: 0;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 40px;
-  
-}
-
 
 .text-column {
-  /* margin-left: 100px; */
   flex: 1;
   max-width: 650px;
   min-width: 500px;
-
   font-size: 32px;
   line-height: 1.8;
-  font-family: 'Inter', sans-serif;
-  font-weight: 400;
-
   display: flex;
   flex-direction: column;
   justify-content: center;
-
   text-align: left;
+  /* Фиксируем позицию */
+  position: relative;
+  left: 0;
+  margin-left: 0;
+  /* Запрещаем изменение ширины */
+  width: 650px;
+  flex-shrink: 0;
+}
+
+.text-content-container {
+  width: 100%;
+  height: auto;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0;
+  /* Запрещаем изменение размеров */
+  box-sizing: border-box;
 }
 
 .text-column p {
   animation: textFadeIn 0.6s ease both;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  /* Убираем любые влияния на высоту */
+  line-height: 1.6;
 }
 
 .text-column button {
-  align-self: flex-start;
-  margin-top: 24px;
+  position: static; /* Возвращаем в поток */
+  margin-top: 20px;
+  align-self: flex-start; /* Выравниваем по левому краю текста */
+}
+
+.text-column button[hidden] {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.text-content {
+  width: 100%;
+  /* Фиксированная высота для текстового блока */
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+}
+
+.text-content-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+
+.text-inner {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  /* Гарантируем, что текст не будет влиять на размеры */
+  overflow: hidden;
+}
+
+@keyframes textFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Полноэкранный режим для видео */
+:fullscreen video,
+:-webkit-full-screen video {
+  object-fit: contain !important;
+  background: #000 !important;
 }
 
 /* Финальные титры */
-
 #final {
-  height: 100vh;
-  overflow: hidden;
+  justify-content: center;
+  align-items: center;
+  /* padding: 40px; */
+  padding: 0 !important;
+}
+
+#final .scene-content-container,
+#final .credits {
+  margin: 0;
+  padding: 0;
+}
+
+#final .scene-content-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .credits {
   position: relative;
+  width: 100%;
   height: 100%;
   display: flex;
   justify-content: center;
@@ -431,167 +380,634 @@ video {
 
 .credits-content {
   text-align: center;
-  font-size: 30px;
-  line-height: 2.2;
-  animation: credits-roll 60s linear forwards;
-  font-family: 'Inter', sans-serif;
+  font-size: clamp(24px, 4vw, 30px);
+  line-height: 2;
+  animation: credits-roll 100s linear forwards;
+  /* font-family: 'Inter', sans-serif; */
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  line-height: 1.4;
+  width: 100%;
 }
+
+.credits-content,
+.credits-content * {
+  cursor: default; /* или auto */
+  user-select: none;
+}
+
 
 .credits-content h2 {
   margin-bottom: 40px;
-  font-size: 42px;
+  font-size: clamp(32px, 5vw, 42px);
 }
 
 .credits-content .spacer {
   height: 80px;
 }
 
-/* @keyframes credits-roll {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(-130%);
-  }
-} */
-
 @keyframes credits-roll {
   from {
     transform: translateY(100%);
   }
   to {
-    transform: translateY(calc(-100% - 100vh)); /* Титры поднимаются на высоту своего контента + высоту экрана */
+    transform: translateY(calc(-100% - 100vh));
   }
 }
 
 /* Финальное фото */
 .final-photo-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: rgba(0, 0, 0, 0.9);
-    opacity: 0;
-    transition: opacity 2s ease-in-out;
-    z-index: 10;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.9);
+  opacity: 0;
+  transition: opacity 2s ease-in-out;
+  z-index: 10;
 }
 
 .final-photo-container.show {
-    opacity: 1;
+  opacity: 1;
 }
 
 #final-photo {
-    max-width: 80%;
-    max-height: 70%;
-    border-radius: 15px;
-    box-shadow: 0 0 40px rgba(255, 165, 0, 0.5);
-    margin-bottom: 40px;
-    transform: scale(0.95);
-    transition: transform 1s ease;
+  max-width: 80%;
+  max-height: 70%;
+  border-radius: 15px;
+  box-shadow: 0 0 40px rgba(255, 165, 0, 0.5);
+  margin-bottom: 40px;
+  transform: scale(0.95);
+  transition: transform 1s ease;
 }
 
 .final-photo-container.show #final-photo {
-    transform: scale(1);
-}
-
-#restart-button {
-    font-size: 20px;
-    padding: 15px 40px;
-    background: linear-gradient(135deg, #ff6600, #ff3300);
-    border: none;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-#restart-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(255, 102, 0, 0.7);
+  transform: scale(1);
 }
 
 /* Круглое видео из Telegram */
+.circle-video-wrapper {
+  position: relative;
+  display: inline-block;
+  width: min(350px, 40vw);
+  height: min(350px, 40vw);
+}
+
+.circle-video-wrapper:fullscreen video,
+.circle-video-wrapper:-webkit-full-screen video {
+  object-fit: contain !important;
+  max-width: none !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+}
+
+.media-column video.circle-video:fullscreen,
+.media-column video.circle-video:-webkit-full-screen {
+  border-radius: 0 !important;
+  object-fit: contain !important;
+  box-shadow: none !important;
+  
+}
+
 .media-column video.circle-video {
-  width: 350px;
-  height: 350px;
-  max-width: 350px;
-  max-height: 350px;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: min(350px, 40vw) !important;
+  max-height: min(350px, 40vw) !important;
   border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  object-fit: cover !important;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3) !important;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Эффект при наведении */
-.media-column video.circle-video:hover {
-  transform: scale(1.02);
-  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+/* Когда видео в полноэкранном режиме, обертка должна быть квадратной */
+:fullscreen .circle-video-wrapper {
+  border-radius: 0 !important;
+  overflow: visible !important;
 }
 
-/* Эффект при клике */
-.media-column video.circle-video:active {
-  transform: scale(0.98);
+:-webkit-full-screen .circle-video-wrapper {
+  border-radius: 0 !important;
+  overflow: visible !important;
 }
 
-/* Индикатор воспроизведения (опционально) */
-.media-column video.circle-video::before {
+/* Индикатор воспроизведения/паузы */
+.circle-video-wrapper::before {
   content: "";
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 70px;
   background: rgba(0, 0, 0, 0.7);
   border-radius: 50%;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, background-color 0.3s ease;
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
 }
 
-.media-column video.circle-video.paused::before {
-  content: "▶";
+.circle-video-wrapper:hover::before {
+  opacity: 0.7;
+  content: "⏸";
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 24px;
-  opacity: 0.8;
+  font-size: 26px;
 }
 
-/* Полноэкранный режим для круглого видео */
-video.circle-video:-webkit-full-screen {
-  width: 80vmin !important;
-  height: 80vmin !important;
-  max-width: none !important;
-  max-height: none !important;
-  border-radius: 50% !important;
-  object-fit: contain !important;
-  background-color: #000 !important;
-  left: 50% !important;
-  top: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  position: fixed !important;
-  cursor: default !important;
+.circle-video-wrapper:not(.video-paused):hover::before {
+  opacity: 0.7;
+  content: "⏸";
 }
 
-video.circle-video:fullscreen {
-  width: 80vmin !important;
-  height: 80vmin !important;
-  max-width: none !important;
-  max-height: none !important;
-  border-radius: 50% !important;
-  object-fit: contain !important;
-  background-color: #000 !important;
-  left: 50% !important;
-  top: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  position: fixed !important;
-  cursor: default !important;
+.circle-video-wrapper.video-paused:hover::before {
+  opacity: 0.9;
+  content: "▶";
+  background: rgba(0, 0, 0, 0.9);
 }
+
+.media-column video.circle-video:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+}
+
+.media-column video.circle-video:active {
+  transform: scale(0.98);
+}
+
+/*--------------Звук------------------*/
+
+
+.sound-control {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 10px 14px;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+body[data-time="night"] .sound-control {
+  background: rgba(30, 30, 35, 0.85);
+}
+
+
+/* Кнопка звука */
+#sound-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;  /* прозрачный фон — наследуется от .sound-control */
+  border: none;
+  cursor: pointer;
+  color: #000;              /* цвет иконки в дневной теме */
+}
+
+#sound-toggle .sound-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+/* Ночная тема – иконка белая */
+body[data-time="night"] #sound-toggle {
+  color: #fff;
+}
+
+/* Состояние "muted" – иконка становится светлее */
+#sound-toggle.muted .sound-icon {
+  opacity: 0.5;              /* можно также использовать filter: brightness(0.7); */
+}
+
+#sound-volume {
+  width: 80px;
+  cursor: pointer;
+}
+
+/* === ПОЛЗУНОК ГРОМКОСТИ – кастомный (серый thumb, чёрный прогресс) === */
+#sound-volume {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 80px;           /* как в вашем коде */
+  height: 6px;           /* жирнее, чем было */
+  background: transparent;
+  outline: none;
+}
+
+/* === WebKit (Chrome, Safari, Opera) === */
+#sound-volume::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(to right, #000, #000) 0/ var(--sx, 0) 100% no-repeat #ddd;
+  border-radius: 3px;
+}
+
+#sound-volume::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #000000;                /* серый */
+  border: 2px solid white;          /* белая обводка */
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  margin-top: -5px;                 /* центрирование по треку */
+  cursor: pointer;
+}
+
+/* === Firefox === */
+#sound-volume::-moz-range-track {
+  width: 100%;
+  height: 6px;
+  background: #ddd;
+  border-radius: 3px;
+}
+
+#sound-volume::-moz-range-progress {
+  height: 6px;
+  background: #000;
+  border-radius: 3px;
+}
+
+#sound-volume::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #000000;
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+
+/* === Internet Explorer / Edge (старые версии) === */
+#sound-volume::-ms-track {
+  height: 6px;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+#sound-volume::-ms-fill-lower {
+  background: #000;
+  border-radius: 3px;
+}
+#sound-volume::-ms-fill-upper {
+  background: #ddd;
+  border-radius: 3px;
+}
+#sound-volume::-ms-thumb {
+  width: 16px;
+  height: 16px;
+  background: #000000;
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+
+/* === НОЧНАЯ ТЕМА: инвертированные цвета ползунка громкости === */
+body[data-time="night"] #sound-volume::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #505050, #505050) 0/ var(--sx, 0) 100% no-repeat #000;
+}
+
+body[data-time="night"] #sound-volume::-webkit-slider-thumb {
+  background: #505050;
+  border-color: white;
+}
+
+body[data-time="night"] #sound-volume::-moz-range-track {
+  background: #000;
+}
+
+body[data-time="night"] #sound-volume::-moz-range-progress {
+  background: #505050;
+}
+
+body[data-time="night"] #sound-volume::-moz-range-thumb {
+  background: #505050;
+  border-color: white;
+}
+
+body[data-time="night"] #sound-volume::-ms-fill-lower {
+  background: #505050; /* заполненная часть */
+}
+
+body[data-time="night"] #sound-volume::-ms-fill-upper {
+  background: #000;    /* пустая часть */
+}
+
+body[data-time="night"] #sound-volume::-ms-thumb {
+  background: #505050;
+  border-color: white;
+}
+
+
+
+/*------------ ПОЛНОЭКРАННЫЙ РЕЖИМ -------------- */
+
+/* Полноэкранный режим для обычных видео внутри media-column */
+.media-column video:fullscreen,
+.media-column video:-webkit-full-screen {
+  object-fit: contain !important;
+}
+
+/* Дополнительная страховка для случаев, когда fullscreen установлен на родителе */
+.media-column:fullscreen video,
+.media-column:-webkit-full-screen video {
+  object-fit: contain !important;
+}
+
+
+/* ---------------------КУРСОР---------------- */
+
+/* Глобально для всех элементов */
+* {
+  cursor: default;      /* Стрелка везде */
+  user-select: none;    /* Запрет выделения */
+}
+
+/* Исключения для кнопок и ссылок */
+button,
+a,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+[role="button"] {
+  cursor: pointer;      /* На кнопках — рука */
+  /* user-select можно оставить none (текст кнопки не выделяется) */
+}
+
+
+/* ===== АДАПТАЦИЯ ПОД ПЛАНШЕТЫ (до 1024px) ===== */
+@media (max-width: 1024px) {
+  .scene-step {
+    gap: 40px; /* уменьшаем расстояние между колонками */
+  }
+
+  .text-column {
+    max-width: 500px; /* делаем текст уже, чтобы не упирался в края */
+    min-width: 300px;
+    width: auto;
+    font-size: 28px;
+  }
+
+  .media-column {
+    width: 350px; /* уменьшаем размер медиа */
+  }
+
+  .media-column img,
+  .media-column video {
+    max-width: 100%;
+    max-height: 45vh;
+  }
+
+  .scene > h2 {
+    font-size: clamp(35px, 6vw, 46px)
+  }
+
+  .scene > p {
+    font-size: clamp(16px, 2.5vw, 20px);
+  }
+}
+
+
+
+/* ===== ТЕЛЕФОНЫ (до 768px) ===== */
+
+/* Скрываем подпись под круглым видео на экранах шире 768px (десктопы) */
+@media (min-width: 769px) {
+  .video-caption {
+    display: none;
+  }
+}
+
+
+@media (max-width: 768px) {
+  .scene {
+    padding: 35px 15px 80px 15px;
+  }
+
+  .scene.active {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  .scene > h2 {
+    font-size: clamp(30px, 7vw, 34px);
+  }
+
+  .scene > p {
+    font-size: clamp(20px, 5vw, 26px);
+    margin: 0 0 10px 0;
+  }
+
+  /* ===== КОНТЕЙНЕР КОНТЕНТА ===== */
+  .scene-content-container {
+    flex: 1;                      /* занимает всё место между заголовком и кнопками */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;  /* отключаем центрирование от десктопа */
+    align-items: stretch;
+    overflow: visible;            /* тени не обрезаются */
+  }
+
+  /* ===== ПРОМЕЖУТОЧНЫЙ КОНТЕЙНЕР (ДОБАВЛЕН!) ===== */
+  .scene-content {
+    display: flex;
+    flex-direction: column;       /* вертикальное расположение */
+    justify-content: flex-start;      /* центрируем дочерний .scene-step по вертикали */
+    align-items: center;
+    flex: 1;                      /* занимает всю высоту родителя */
+    min-height: 0;
+    /* border: 2px solid red; */
+  }
+
+  /* ===== СТУПЕНЬ (МЕДИА + ТЕКСТ) ===== */
+  .scene-step {
+    flex-direction: column;
+    gap: 35px;
+    height: auto;                 /* сбрасываем десктопное height: 100% */
+    max-height: none;             /* сбрасываем max-height: 70vh */
+    width: 100%;
+    margin: 0;                    /* убираем старый margin */
+    /* border: 2px solid red; */
+    margin-top: 25px;
+  }
+
+  .scene-step.no-media {
+    height: 100%;                /* занимаем всю высоту родительского .scene-content */
+    margin-top: 0;               /* убираем отступ */
+    justify-content: center;     /* центрируем содержимое по вертикали */
+    align-items: center;
+  }
+  
+
+  .scene-step.text-center .text-column {
+    text-align: center;
+  }
+
+
+  /* Медиа */
+  .media-column {
+    width: 100%;
+    flex: none;
+    display: flex;
+    justify-content: center;
+    padding: 0 5px;
+  }
+
+  .media-column img {
+    max-width: 90%;
+    max-height: 35vh;
+    object-fit: cover;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  }
+
+  .media-column video {
+    max-width: 65%;
+    max-height: 35vh;
+    object-fit: cover;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  }
+
+  .circle-video-wrapper::before {
+    display: none !important;
+  }
+  .circle-video-wrapper:hover::before,
+  .circle-video-wrapper.video-paused:hover::before {
+    display: none !important;
+  }
+
+  .video-caption {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-color);
+    opacity: 0.7;
+    margin-top: 8px;
+    width: 100%;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.4;
+    padding: 0 10px;
+    box-sizing: border-box;
+  }
+
+  .media-column.has-caption {
+    flex-direction: column;   /* теперь элементы идут вертикально */
+    gap: 10px;                /* отступ между видео и подписью */
+  }
+
+  /* Текст */
+  .text-column {
+    width: 100%;
+    max-width: 100%;
+    flex: none;
+    font-size: clamp(20px, 5vw, 24px);
+    line-height: 1.5;
+    text-align: justify;
+    padding: 0 10px;
+    box-sizing: border-box;
+  }
+
+  /* Кнопки в потоке */
+  .scene-buttons {
+    position: absolute;
+    bottom: 35px;
+    /* margin: 20px 0 30px 0; */
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 0;
+  }
+
+  .scene-buttons button {
+    padding: 12px 24px;
+    font-size: clamp(18px, 2vw, 21px);
+  }
+
+  /* Intro логотип (после старта) */
+  #intro .intro-logo {
+    max-width: 80vw;
+    max-height: 35vh;
+  }
+
+  /* Панель звука */
+  .sound-control {
+    top: 10px;
+    right: 10px;
+    padding: 4px 8px;
+    gap: 5px;
+  }
+
+  #sound-toggle {
+    width: 28px;
+    height: 28px;
+  }
+
+  #sound-toggle .sound-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  #sound-volume {
+    width: 50px;
+  }
+
+  /* Титры */
+  .credits-content {
+    font-size: clamp(20px, 6vw, 26px);
+    line-height: 1.6;
+  }
+
+  .credits-content h2 {
+    font-size: clamp(24px, 7vw, 32px);
+  }
+
+  /* Начальная сцена ДО старта – компактный логотип */
+  #intro:not(.started) .scene-content-container {
+    flex: 1;
+    max-height: 40vh;
+    margin: 15px 0;
+    padding: 100px 0;
+  }
+
+  #intro:not(.started) .intro-logo {
+    max-height: 45vh;
+    margin: 0 auto;
+  }
+
+  #intro > h2 {
+    font-size: clamp(36px, 5vw, 40px);  /* было 22–28px, теперь крупнее */
+    margin: 0 0 8px 0;                   /* чуть увеличиваем нижний отступ */
+  }
+
+  #intro > p {
+    font-size: clamp(18px, 3vw, 20px);   /* было 16–18px */
+    margin: 0 0 12px 0;
+  }
+}
+
