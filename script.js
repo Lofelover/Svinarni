@@ -55,12 +55,70 @@ function waitForMediaInContainer(container) {
   return Promise.all(promises);
 }
 
+// Функция для корректной высоты на мобильных устройствах
+function setVh() {
+  if (window.innerWidth <= 768) {
+    // Получаем реальную высоту окна
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+    
+    // Определяем, открыта ли панель навигации (примерно)
+    // Если window.innerHeight близок к screen.height, значит панель скрыта
+    const isNavHidden = Math.abs(window.innerHeight - window.screen.height) < 50;
+    
+    // Можно добавить класс для дополнительной кастомизации
+    document.body.classList.toggle('nav-hidden', isNavHidden);
+  }
+}
+
+// Следим за изменениями высоты
+window.addEventListener('load', setVh);
+window.addEventListener('resize', setVh);
+window.addEventListener('orientationchange', setVh);
+window.addEventListener('scroll', () => {
+  // Некоторые браузеры скрывают панель при скролле
+  if (window.scrollY === 0) setVh();
+});
+
+// Также следим за видимостью (например, когда пользователь открывает клавиатуру)
+if ('visualViewport' in window) {
+  window.visualViewport.addEventListener('resize', setVh);
+}
+
 const sounds = {
   intro: new Audio('/sounds/intro.mp3'),
   day: new Audio('/sounds/first_slowed.mp3'),
   night: new Audio('/sounds/second.mp3'),
   final: new Audio('/sounds/titles.mp3'),
 };
+
+// Функция для инициализации звука на мобильных устройствах
+function initAudioOnFirstTouch() {
+  // Проверяем, что это мобильное устройство
+  if ('ontouchstart' in window) {
+    const handleFirstTouch = () => {
+      // Создаем тихий звуковой контекст для разблокировки аудио на iOS
+      const silentAudio = new Audio();
+      silentAudio.volume = 0.01;
+      silentAudio.play().catch(() => {});
+      
+      // Если звук должен быть включен, воспроизводим текущий
+      if (soundEnabled && currentSound && currentSound.paused) {
+        currentSound.play().catch(e => console.log('Play after touch:', e));
+      }
+      
+      // Удаляем обработчик после первого касания
+      document.removeEventListener('touchstart', handleFirstTouch);
+      document.removeEventListener('click', handleFirstTouch);
+    };
+    
+    document.addEventListener('touchstart', handleFirstTouch);
+    document.addEventListener('click', handleFirstTouch);
+  }
+}
+
+// Вызываем после загрузки страницы
+document.addEventListener('DOMContentLoaded', initAudioOnFirstTouch);
 
 // Настройка звуков (делаем это только один раз)
 Object.values(sounds).forEach(sound => {
@@ -73,8 +131,6 @@ const volumeSlider = document.getElementById('sound-volume');
 
 // Начальное состояние
 volumeSlider.value = masterVolume;
-// soundToggleBtn.textContent = '🔊'; // Изначально включен!
-// Убеждаемся, что класс muted отсутствует (звук включён и громкость > 0)
 soundToggleBtn.classList.remove('muted');
 
 // Функция плавного изменения громкости
@@ -143,6 +199,81 @@ function handleVideoPause() {
 }
 
 
+// function playSound(name) {
+//   console.log('playSound вызван с аргументом:', name);
+  
+//   const nextSound = sounds[name];
+//   if (!nextSound) {
+//     console.error('Звук не найден:', name);
+//     return;
+//   }
+
+//   // Если это тот же самый звук, ничего не делаем
+//   if (currentSound === nextSound) {
+//     console.log('Этот звук уже играет');
+//     return;
+//   }
+
+//   // Останавливаем ВСЕ звуки перед воспроизведением нового
+//   Object.values(sounds).forEach(sound => {
+//     if (sound !== nextSound) {
+//       // Плавно выключаем и полностью останавливаем
+//       sound.pause();
+//       sound.currentTime = 0;
+//       sound.volume = 0;
+//     }
+//   });
+
+//   // Если был текущий звук, плавно его выключаем
+//    if (currentSound && currentSound !== nextSound) {
+//     console.log('Плавно выключаем предыдущий звук');
+    
+//     // Создаем копию текущего звука для плавного выключения
+//     const prevSound = currentSound;
+//     const prevVolume = prevSound.volume;
+    
+//     // Плавно уменьшаем громкость текущего звука
+//     const fadeOutInterval = setInterval(() => {
+//       prevSound.volume = Math.max(0, prevSound.volume - (prevVolume / 20));
+//       if (prevSound.volume <= 0.01) {
+//         clearInterval(fadeOutInterval);
+//         prevSound.pause();
+//         prevSound.currentTime = 0;
+//         prevSound.volume = 0;
+//       }
+//     }, 50);
+//   }
+
+//   // Плавно включаем новый звук
+//   currentSound = nextSound;
+  
+//    if (soundEnabled) {
+//     console.log('Плавно включаем новый звук:', name);
+    
+//     // Сбрасываем время и громкость
+//     currentSound.currentTime = 0;
+//     currentSound.volume = 0;
+    
+//     // Начинаем воспроизведение
+//     currentSound.play().catch(error => {
+//       console.log('Ошибка воспроизведения:', error);
+//     });
+    
+//     // Плавное увеличение громкости (немного медленнее)
+//     const fadeInInterval = setInterval(() => {
+//       currentSound.volume = Math.min(masterVolume, currentSound.volume + (masterVolume / 20));
+//       if (currentSound.volume >= masterVolume - 0.01) {
+//         clearInterval(fadeInInterval);
+//         currentSound.volume = masterVolume;
+//       }
+//     }, 50);
+//   } else {
+//     console.log('Звук отключен, не включаем');
+//     currentSound.volume = 0;
+//   }
+// }
+
+
 function playSound(name) {
   console.log('playSound вызван с аргументом:', name);
   
@@ -161,7 +292,6 @@ function playSound(name) {
   // Останавливаем ВСЕ звуки перед воспроизведением нового
   Object.values(sounds).forEach(sound => {
     if (sound !== nextSound) {
-      // Плавно выключаем и полностью останавливаем
       sound.pause();
       sound.currentTime = 0;
       sound.volume = 0;
@@ -169,14 +299,12 @@ function playSound(name) {
   });
 
   // Если был текущий звук, плавно его выключаем
-   if (currentSound && currentSound !== nextSound) {
+  if (currentSound && currentSound !== nextSound) {
     console.log('Плавно выключаем предыдущий звук');
     
-    // Создаем копию текущего звука для плавного выключения
     const prevSound = currentSound;
     const prevVolume = prevSound.volume;
     
-    // Плавно уменьшаем громкость текущего звука
     const fadeOutInterval = setInterval(() => {
       prevSound.volume = Math.max(0, prevSound.volume - (prevVolume / 20));
       if (prevSound.volume <= 0.01) {
@@ -191,31 +319,59 @@ function playSound(name) {
   // Плавно включаем новый звук
   currentSound = nextSound;
   
-   if (soundEnabled) {
+  if (soundEnabled) {
     console.log('Плавно включаем новый звук:', name);
     
-    // Сбрасываем время и громкость
     currentSound.currentTime = 0;
     currentSound.volume = 0;
     
-    // Начинаем воспроизведение
-    currentSound.play().catch(error => {
-      console.log('Ошибка воспроизведения:', error);
-    });
+    // Для мобильных устройств пробуем воспроизвести с обработкой ошибок
+    const playPromise = currentSound.play();
     
-    // Плавное увеличение громкости (немного медленнее)
-    const fadeInInterval = setInterval(() => {
-      currentSound.volume = Math.min(masterVolume, currentSound.volume + (masterVolume / 20));
-      if (currentSound.volume >= masterVolume - 0.01) {
-        clearInterval(fadeInInterval);
-        currentSound.volume = masterVolume;
-      }
-    }, 50);
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          // Успешно начали воспроизведение, теперь плавно увеличиваем громкость
+          const fadeInInterval = setInterval(() => {
+            currentSound.volume = Math.min(masterVolume, currentSound.volume + (masterVolume / 20));
+            if (currentSound.volume >= masterVolume - 0.01) {
+              clearInterval(fadeInInterval);
+              currentSound.volume = masterVolume;
+            }
+          }, 50);
+        })
+        .catch(error => {
+          console.log('Ошибка воспроизведения:', error);
+          // На iOS может быть заблокировано до взаимодействия
+          if (error.name === 'NotAllowedError') {
+            console.log('Звук заблокирован браузером до взаимодействия пользователя');
+            // Помечаем, что звук должен быть включен, но пока не играет
+            currentSound.volume = 0;
+          }
+        });
+    }
   } else {
     console.log('Звук отключен, не включаем');
     currentSound.volume = 0;
   }
 }
+
+// // Обработчик громкости
+// volumeSlider.addEventListener('input', () => {
+//   masterVolume = parseFloat(volumeSlider.value);
+
+//   Object.values(sounds).forEach(sound => {
+//     sound.volume = masterVolume;
+//   });
+
+//   // Обновляем класс muted
+//   if (!soundEnabled || masterVolume === 0) {
+//     soundToggleBtn.classList.add('muted');
+//   } else {
+//     soundToggleBtn.classList.remove('muted');
+//   }
+// });
+
 
 // Обработчик громкости
 volumeSlider.addEventListener('input', () => {
@@ -230,6 +386,21 @@ volumeSlider.addEventListener('input', () => {
     soundToggleBtn.classList.add('muted');
   } else {
     soundToggleBtn.classList.remove('muted');
+  }
+});
+
+// Обработка видимости страницы (для мобильных устройств)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    // Страница скрыта - приглушаем звук
+    if (currentSound && soundEnabled) {
+      currentSound.volume = 0;
+    }
+  } else {
+    // Страница снова видима - восстанавливаем громкость
+    if (currentSound && soundEnabled) {
+      currentSound.volume = masterVolume;
+    }
   }
 });
 
@@ -255,19 +426,72 @@ volumeSlider.addEventListener('input', () => {
 //   }
 // });
 
-soundToggleBtn.addEventListener('click', () => {
+// soundToggleBtn.addEventListener('click', () => {
+//   soundEnabled = !soundEnabled;
+
+//   if (soundEnabled) {
+//     soundToggleBtn.classList.remove('muted');
+//     if (currentSound) {
+//       // Если звук уже воспроизводится, но muted? Просто убедимся
+//       if (currentSound.paused) {
+//         currentSound.play().catch(e => console.log('Play failed:', e));
+//       }
+//       fadeIn(currentSound, masterVolume);
+//     } else {
+//       // Если currentSound нет, может быть, стоит создать?
+//     }
+//   } else {
+//     soundToggleBtn.classList.add('muted');
+//     if (currentSound) {
+//       fadeOut(currentSound);
+//     }
+//   }
+// });
+
+
+// Обработчик кнопки звука
+soundToggleBtn.addEventListener('click', (event) => {
+  // Предотвращаем всплытие события, если кнопка внутри чего-то
+  event.stopPropagation();
+  
   soundEnabled = !soundEnabled;
 
   if (soundEnabled) {
     soundToggleBtn.classList.remove('muted');
+    
+    // На мобильных устройствах нужно явно запустить воспроизведение
     if (currentSound) {
-      // Если звук уже воспроизводится, но muted? Просто убедимся
+      // Проверяем, есть ли текущий звук
       if (currentSound.paused) {
-        currentSound.play().catch(e => console.log('Play failed:', e));
+        // Пытаемся воспроизвести с обработкой ошибок
+        const playPromise = currentSound.play();
+        
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.log('Ошибка воспроизведения:', error);
+            // Если не удалось воспроизвести, пробуем создать новый контекст
+            if (error.name === 'NotAllowedError') {
+              console.log('Требуется взаимодействие пользователя для звука');
+              // На iOS нужно дополнительное взаимодействие
+              soundEnabled = false;
+              soundToggleBtn.classList.add('muted');
+            }
+          });
+        }
       }
+      
+      // Плавно увеличиваем громкость
       fadeIn(currentSound, masterVolume);
     } else {
-      // Если currentSound нет, может быть, стоит создать?
+      // Если нет текущего звука, но звук включен, пытаемся воспроизвести звук текущей сцены
+      const activeScene = document.querySelector('.scene.active');
+      if (activeScene) {
+        const sceneId = activeScene.id;
+        const soundToPlay = sceneToSoundMap[sceneId];
+        if (soundToPlay) {
+          playSound(soundToPlay);
+        }
+      }
     }
   } else {
     soundToggleBtn.classList.add('muted');
@@ -504,36 +728,6 @@ const introSteps = [
   }
 ];
 
-// function playIntroStep() {
-//   nextBtn.hidden = true;
-
-//   if (introIndex < introSteps.length) {
-//     const step = introSteps[introIndex];
-
-//     const textContainer = renderSceneStep(introContainer, step);
-
-//     typeText(textContainer, step.text, () => {
-//       nextBtn.hidden = false;
-//       introIndex++;
-//     });
-
-//   } else {
-//     introContainer.innerHTML = `
-//       <div class="scene-step no-media">
-//         <div class="text-column">
-//           <p>   
-//             История начинается…
-//           </p>
-//         </div>
-//       </div>
-//     `;
-
-//     nextBtn.hidden = false;
-//     nextBtn.textContent = "Перейти к первому походу";
-
-//     introIndex = introSteps.length + 1;
-//   }
-// }
 
 function playIntroStep() {
   nextBtn.hidden = true;
@@ -850,50 +1044,6 @@ secondNextBtn.addEventListener('click', () => {
   playSecondHikeStep();
 });
 
-// function playSecondHikeStep() {
-//   secondNextBtn.hidden = true;
-
-//   if (secondHikeIndex < secondHikeSteps.length) {
-//     const step = secondHikeSteps[secondHikeIndex];
-
-//     const textContainer = renderSceneStep(secondContainer, step);
-
-//     // GSAP анимация для медиа
-//     const mediaItems = secondContainer.querySelectorAll(
-//       '.media-column img, .media-column video'
-//     );
-
-//     if (mediaItems.length) {
-//       gsap.fromTo(
-//         mediaItems,
-//         {
-//           opacity: 0,
-//           scale: 0.96
-//         },
-//         {
-//           opacity: 1,
-//           scale: 1,
-//           duration: 0.8,
-//           ease: 'power3.out',
-//           stagger: mediaItems.length > 1 ? 0.15 : 0
-//         }
-//       );
-//     }
-    
-//     // Печать текста
-//     typeText(textContainer, step.text, () => {
-//        if (step.isLast) {
-//         secondNextBtn.hidden = true;
-//         finishSecondHikeBtn.hidden = false;
-//       } else {
-//         secondNextBtn.hidden = false;
-//       }
-//     });
-
-//   } else {
-//     finishSecondHikeBtn.hidden = false;
-//   }
-// }
 
 function playSecondHikeStep() {
   secondNextBtn.hidden = true;
