@@ -13,6 +13,37 @@ let currentSound = null;
 let originalVolume = masterVolume;
 let playingVideosCount = 0;
 
+// Уведомление о включении звука (один раз)
+const notification = document.getElementById('sound-notification');
+const closeBtn = document.getElementById('close-notification');
+
+function showSoundNotification() {
+  // Проверяем, показывали ли уже уведомление
+  if (!localStorage.getItem('soundNotificationShown')) {
+    setTimeout(() => {
+      notification.classList.add('show');
+    }, 1000); // задержка, чтобы страница загрузилась
+  }
+}
+
+function hideSoundNotification() {
+  notification.classList.remove('show');
+  localStorage.setItem('soundNotificationShown', 'true');
+}
+
+if (closeBtn) {
+  closeBtn.addEventListener('click', hideSoundNotification);
+}
+
+// Автоматически скрыть через 10 секунд, если не закрыли
+setTimeout(() => {
+  if (notification && notification.classList.contains('show')) {
+    hideSoundNotification();
+  }
+}, 20000);
+
+// Показываем уведомление при загрузке DOM
+document.addEventListener('DOMContentLoaded', showSoundNotification);
 
 const sceneToSoundMap = {
   'intro': 'intro',
@@ -632,8 +663,6 @@ const introContainer = document.querySelector("#intro .scene-content");
 const startBtn = document.getElementById("intro-start");
 const nextBtn = document.getElementById("intro-finish");
 
-
-
 function typeText(container, text, onFinish) {
   container.innerHTML = "";
   
@@ -655,8 +684,6 @@ function typeText(container, text, onFinish) {
 }
 
 startBtn.addEventListener("click", () => {
-  // // Включаем звук для вступления
-  // playSound('intro');
 
   introSection.classList.add("started");
   startBtn.hidden = true;
@@ -1215,10 +1242,10 @@ function isTouchDevice() {
   return (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
 }
 
-// Если устройство сенсорное – скрываем ползунок громкости
+// Если устройство сенсорное – скрываем всю панель управления звуком
 if (isTouchDevice()) {
-  const volumeSlider = document.getElementById('sound-volume');
-  if (volumeSlider) {
-    volumeSlider.style.display = 'none';
+  const soundControl = document.querySelector('.sound-control');
+  if (soundControl) {
+    soundControl.style.display = 'none';
   }
 }

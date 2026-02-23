@@ -784,6 +784,11 @@ input[type="reset"],
 
 /* ===== АДАПТАЦИЯ ПОД ПЛАНШЕТЫ (до 1024px) ===== */
 @media (max-width: 1024px) {
+
+  .sound-control {
+    display: none;
+  }
+  
   .scene-step {
     gap: 40px; /* уменьшаем расстояние между колонками */
   }
@@ -811,6 +816,76 @@ input[type="reset"],
 
   .scene > p {
     font-size: clamp(16px, 2.5vw, 20px);
+  }
+}
+
+/* Уведомление при входе на сайте */
+
+/* Уведомление о включении звука */
+.sound-notification {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: white;
+  border-radius: 16px;
+  padding: 16px 20px;
+  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  transform: translateY(calc(100% + 20px));
+  transition: transform 0.3s ease;
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.sound-notification.show {
+  transform: translateY(0);
+}
+
+.notification-content p {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  line-height: 1.5;
+  font-family: 'Playfair Display', serif;
+}
+
+#close-notification {
+  background: white;
+  color: black;
+  border: none;
+  border-radius: 30px;
+  padding: 8px 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: 'Playfair Display', serif;
+}
+
+#close-notification:hover {
+  background: #f0f0f0;
+}
+
+body[data-time="night"] .sound-notification {
+  background: rgba(30, 30, 35, 0.95);
+  border-color: rgba(255,255,255,0.2);
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 768px) {
+  .sound-notification {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    padding: 14px 16px;
+  }
+  .notification-content p {
+    font-size: 15px;
   }
 }
 
